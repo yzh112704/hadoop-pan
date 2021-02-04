@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>        <ul class="layui-nav layui-layout-right">
+            <div class="layui-form layui-input-inline" style="width: 100px;color: #000000;right: 40px;">
+                <select id="searchSelect">
+                    <option value="id">用户ID</option>
+                    <option value="name">用户名</option>
+                    <option value="institute">学院</option>
+                    <option value="grade">年级</option>
+                    <option value="major">专业</option>
+                </select>
+            </div>
+            <div class="layui-form layui-input-inline" style="width: 150px;right: 35px;">
+                <input id="search" type="text" class="layui-input" placeholder="搜索">
+            </div>
+            <li class="layui-nav-item" style="right: 30px">
+                <a th:text="${admin.id}">
+                    <span class="layui-nav-more"></span>
+                </a>
+                <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a th:onclick="openEdit('admin', [[${admin.id}]])">修改基本资料</a></dd>
+                    <dd th:if="${type=='user'&&admin.level!='common'}"><a th:onclick="addUserOrAdmin('addUser')">添加用户</a></dd>
+					<dd th:if="${type=='user'&&admin.level!='common'}"><a th:onclick="clickUploadExcel()">批量添加用户</a></dd>
+                    <dd th:if="${type=='user'&&admin.level!='common'}"><a th:onclick="delUsers()">批量删除勾选用户</a></dd>
+					<dd th:if="${type=='user'&&admin.level!='common'}"><a th:onclick="downloadTemplateExcel()">下载Excel模板</a></dd>
+                    <dd th:if="${type=='admin'}"><a th:onclick="addUserOrAdmin('addAdmin')">添加管理员</a></dd>
+                    <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+    </div>
+    <div class="layui-side layui-blay-reqText layui-bg-black">
+        <ul class="layui-nav layui-bg-cyan layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe63c;</i>&ensp;列表</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/allList(type=user)}"><i class="layui-icon">&#xe770;</i>&ensp;用户列表</a></dd>
+                    <dd><a th:if="${admin.level!='common'}" th:href="@{/allList(type=admin)}"><i class="layui-icon">&#xe612;</i>&ensp;管理员列表</a></dd>
+                    <dd><a th:href="@{/allList(type=file)}"><i class="layui-icon">&#xe60a;</i>&ensp;文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=banFile)}"><i class="layui-icon">&#xe64f;</i>&ensp;被禁用文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=share)}"><i class="layui-icon">&#xe609;</i>&ensp;分享链接列表</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe629;</i>&ensp;数据分析</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/analysis(type='day')}"><i class="layui-icon">&#xe62c;</i>&ensp;日常分析</a></dd>
+                    <dd><a th:href="@{/analysis(type='top',top='3')}"><i class="layui-icon">&#xe604;</i>&ensp;排行榜</a></dd>
+                    <dd><a th:href="@{/analysis(type='share',top='3')}"><i class="layui-icon">&#xe64c;</i>&ensp;分享链接分析</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+	<input type="file" hidden="hidden" id="excel" accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+    <a id="download" download="" href=""></a>
+    <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+    <div class="layui-body" style="overflow: auto;">
+        <div style="min-height: 400px">
+            <table class="layui-table" lay-skin="line" style="margin: 0;min-width: 1063px;max-width: 100%;">
+                <thead>
+                <tr>
+<!--                    onclick="clickAllBoxs()"-->
+<!--                    <th lay-data="{field:'id'}"><input id="allboxs" name="allboxs" type="checkbox" onclick="clickAllBoxs()">&ensp;<a id="sortId" name="sorts" onclick="sortBy('users', 'id', 'down', 'sortId')" style="cursor:pointer">用户ID</a></th>-->
+                    <th lay-data="{field:'id'}"><input id="allboxs" name="allboxs" type="checkbox">&ensp;<a id="sortId" name="sorts" onclick="sortBy('users', 'id', 'down', 'sortId')" style="cursor:pointer">用户ID</a></th>
+                    <th lay-data="{field:'name'}"><a id="sortName" name="sorts" onclick="sortBy('users', 'name', 'down', 'sortName')" style="cursor:pointer">用户名 </a></th>
+                    <th lay-data="{field:'institute'}"><a id="sortInstitute" name="sorts" onclick="sortBy('users', 'institute', 'down', 'sortInstitute')" style="cursor:pointer">学院 </a></th>
+                    <th lay-data="{field:'grade'}"><a id="sortGrade" name="sorts" onclick="sortBy('users', 'grade', 'down', 'sortGrade')" style="cursor:pointer">年级 </a></th>
+                    <th lay-data="{field:'major'}"><a id="sortMajor" name="sorts" onclick="sortBy('users', 'major', 'down', 'sortMajor')" style="cursor:pointer">专业 </a></th>
+                    <th lay-data="{field:'status'}"><a id="sortStatus" name="sorts" onclick="sortBy('users', 'status', 'down', 'sortStatus')" style="cursor:pointer">状态 </a></th>
+                    <th th:if="${admin.level!='common'}" lay-data="{field:'function'}"></th>
+                </tr>
+                </thead>
+                <!-- 表格数据加载 -->
+                <tbody id="tab_list">
+                </tbody>
+            </table>
+        </div>
+        <!-- 存放分页的容器 -->
+        <div id="layui" style="text-align: center;"></div>
+    </div>
+    <div class="layui-footer">
+        © hadoop.pan.com - 网盘
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/js/Pinyin.js"></script>
+<script type="text/javascript" src="/js/pan-admin-list.js"></script>
+<script type="text/javascript" src="/js/pan-admin-function.js"></script>
+<script type="text/javascript" src="/js/xlsx.full.min.js"></script>
+<script type="text/javascript" src="/layui/layui.js"></script>
+
+<script>
+    layui.use(['layer', 'element', 'upload', 'laydate', 'form'], function() {
+        layer = layui.layer;
+        element = layui.element;
+        laydate = layui.laydate;
+        form = layui.form;
+    });
+
+    $(allListUsers());
+	//上传Excel按钮触发
+	function clickUploadExcel() {
+		$('#excel')[0].click();
+	}
+	$(document).ready(function(){
+        /*
+        FileReader共有4种读取方法：
+        1.readAsArrayBuffer(file)：将文件读取为ArrayBuffer。
+        2.readAsBinaryString(file)：将文件读取为二进制字符串
+        3.readAsDataURL(file)：将文件读取为Data URL
+        4.readAsText(file, [encoding])：将文件读取为文本，encoding缺省值为'UTF-8'
+                     */
+        var wb;//读取完成的数据
+        var rABS = false; //是否将文件读取为二进制字符串
+
+
+        function fixdata(data) { //文件流转BinaryString
+            var o = "",
+                l = 0,
+                w = 10240;
+            for(; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)));
+            o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)));
+            return o;
+        }
+
+
+        $("#excel").change(function(){
+            if(!this.files) {
+                return;
+            }
+            var f = this.files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var data = e.target.result;
+                if(rABS) {
+                    wb = XLSX.read(btoa(fixdata(data)),{
+                        type: 'base64'
+                    });
+                } else {
+                    wb = XLSX.read(data,{
+                        type: 'binary'
+                    });
+                }
+				var datas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+				var users = '';
+				for(let i=0; i<datas.length; i++){
+					let str = datas[i]['学号'] + '_' + datas[i]['姓名'] + '_' + datas[i]['性别'] + '_' + datas[i]['学院'] + '_' + datas[i]['年级'] + '_' + datas[i]['专业'] + '_' + formatDate(datas[i]['生日'],'-') + '_' + datas[i]['手机'] + '_' + datas[i]['邮箱'] + '_' + datas[i]['住址'] + '_' + datas[i]['状态'] + '_' + datas[i]['空间'];
+					str = str.replace(/undefined/g, ' ');
+					users += str + "~";
+				}
+				addUsers(users);
+                //document.getElementById("demo").innerHTML= JSON.stringify( XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]) );
+            };
+            if(rABS) {
+                reader.readAsArrayBuffer(f);
+            } else {
+                reader.readAsBinaryString(f);
+            }
+        })
+    })
+
+    function delUsers() {
+        var userIds = "";
+        var namebox = $("input[name^='boxs']"); /*获取name值为boxs的所有input*/
+        for (i = 0; i < namebox.length; i++) {
+            if (namebox[i].checked == true) {
+                console.log("userId: " + namebox[i].id);
+                userIds += namebox[i].id + " ";
+            }
+        }
+        if (userIds == "")
+            layer.alert("请选择用户")
+        else {
+            window.location = "/adminDelUsers?type=user&ids=" + userIds;
+        }
+    }
+</script>
+</html>

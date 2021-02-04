@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="utf-8">
+<title>网盘注册登录页面</title>
+<link rel="stylesheet" th:href="@{/css/userLogin_style.css}">
+<link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+
+<body>
+	<div style="position:fixed">
+		<video src="/images/login_bg.mp4" autoplay muted="muted" loop></video>
+	</div>
+	<div th:class="${content}">
+		<div class="form sign-in">
+			<h2>欢迎回来</h2>
+			<form th:action="@{/userLogin}" method="post">
+				<label>
+					<span>学号</span>
+					<input type="text" name="id" class="id" th:value="${user!=null?user.id:''}" required="">
+				</label>
+				<label>
+					<span>密码</span>
+					<input type="password" name="pwd" minlength="6" maxlength="12" autocomplete="off" required=""/>
+				</label>
+				<label>
+					<div>
+						<span>验证码</span>
+						<input type="text" name="captcha" required="" autocomplete="off" minlength="4" maxlength="4">
+						<img th:src="@{/kaptcha}" id="kaptcha" onclick="this.src=this.src+'?'+Math.random();" width="50" height="20" style="height: 28px;width: 75px;position:absolute;margin-top: -31px;right: 190px;" />
+					</div>
+					<br>
+					<div>
+						<input type="checkbox" id="remember-me" name="rememberMe" th:checked="${param.rememberme}" style="width: 205px">
+						<a style="position:absolute;margin-top: -17px;right: 285px;">记住我</a>
+					</div>
+				</label>
+				<label>
+					<p name="userLoginResult" th:text="${loginResult}" style="color: red"></p>
+				</label>
+				<button type="submit" class="submit">登 录</button>
+				<p class="forgot-pass">
+					<a onclick="forgot()" style="cursor:pointer">忘记密码？</a>
+				</p>
+			</form>
+		</div>
+		<div class="sub-cont">
+			<div class="img">
+				<div class="img__text m--up">
+					<h2>还未注册？</h2>
+					<p>立即注册，发现大量机会！</p>
+				</div>
+				<div class="img__text m--in">
+					<h2>已有帐号？</h2>
+					<p>有帐号就登录吧，好久不见了！</p>
+				</div>
+				<div class="img__btn">
+					<span class="m--up">注 册</span>
+					<span class="m--in">登 录</span>
+				</div>
+			</div>
+			<div class="form sign-up">
+				<h2>立即注册</h2>
+				<form th:action="@{/userRegister}" method="post">
+					<label>
+						<span>学号</span>
+						<input type="text" class="id" name="id" th:value="${user!=null?user.id:''}" required="">
+					</label>
+					<label>
+						<span>姓名</span>
+						<input type="text" class="name" name="name" th:value="${user!=null?user.name:''}" required="">
+					</label>
+					<label>
+						<span>密码</span>
+						<input type="password" class="password" name="pwd"  autocomplete="off" minlength="6" maxlength="12" required="">
+					</label>
+					<label>
+						<span>确认密码</span>
+						<input type="password" class="confirmPwd" name="confirmPwd"  autocomplete="off" minlength="6" maxlength="12" required="">
+					</label>
+					<label>
+						<span>邮箱</span>
+						<input type="text" class="email" name="mail" th:value="${user!=null?user.mail:''}" required="">
+					</label>
+					<div style="text-align: center">
+						<p name="userLoginResult" th:text="${registerResult}" style="color: red"></p>
+					</div>
+					<button type="submit" class="submit">注 册</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div style="text-align:center;">
+	</div>
+</body>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script type="text/javascript" src="/js/spark-md5.js"></script>
+<script type="text/javascript" src="/js/pan-user-function.js"></script>
+<script src="/js/script.js"></script>
+<script>
+	layui.use(['layer', 'element', 'upload'], function() {
+		layer = layui.layer;
+		element = layui.element;
+	});
+</script>
+</html>

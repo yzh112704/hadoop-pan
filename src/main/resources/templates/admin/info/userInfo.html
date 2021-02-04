@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户详细信息</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body>
+    <div class="layui-form-item" style="margin-top: 15px">
+        <label class="layui-form-label">学号：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.id!=null?userInfo.id:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">姓名：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.name!=null?userInfo.name:''}">
+        </div>
+    </div>
+    <div class="layui-form-item" pane>
+        <label class="layui-form-label">性别：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.sex!=null?userInfo.sex:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">学院：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.institute!=null?userInfo.institute:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">年级：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.grade!=null?userInfo.grade:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">专业：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.major!=null?userInfo.major:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">生日：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.date!=null?userInfo.date:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.phone!=null?userInfo.phone:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.mail!=null?userInfo.mail:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">住址：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.address!=null?userInfo.address:''}">
+        </div>
+    </div>
+    <div class="layui-form-item" pane>
+        <label class="layui-form-label">状态：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.status=='true'?'已激活':'未激活'}">
+        </div>
+    </div>
+    <div class="layui-form-item" pane>
+        <label class="layui-form-label">空间大小：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${userInfo.totalSpace!=null?userInfo.totalSpace:''}">
+        </div>
+    </div>
+</body>
+</html>

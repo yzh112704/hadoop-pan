@@ -1,0 +1,338 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" style="right: 30px">
+                <a th:text="${admin.id}">
+                    <span class="layui-nav-more"></span>
+                </a>
+                <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a th:onclick="openEdit('admin', [[${admin.id}]])">修改基本资料</a></dd>
+                    <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+    </div>
+    <div class="layui-side layui-blay-reqText layui-bg-black">
+        <ul class="layui-nav layui-bg-cyan layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe63c;</i>&ensp;列表</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/allList(type=user)}"><i class="layui-icon">&#xe770;</i>&ensp;用户列表</a></dd>
+                    <dd><a th:if="${admin.level!='common'}" th:href="@{/allList(type=admin)}"><i class="layui-icon">&#xe612;</i>&ensp;管理员列表</a></dd>
+                    <dd><a th:href="@{/allList(type=file)}"><i class="layui-icon">&#xe60a;</i>&ensp;文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=banFile)}"><i class="layui-icon">&#xe64f;</i>&ensp;被禁用文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=share)}"><i class="layui-icon">&#xe609;</i>&ensp;分享链接列表</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe629;</i>&ensp;数据分析</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/analysis(type='day')}"><i class="layui-icon">&#xe62c;</i>&ensp;日常分析</a></dd>
+                    <dd><a th:href="@{/analysis(type='top',top='3')}"><i class="layui-icon">&#xe604;</i>&ensp;排行榜</a></dd>
+                    <dd><a th:href="@{/analysis(type='share',top='3')}"><i class="layui-icon">&#xe64c;</i>&ensp;分享链接分析</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <a id="download" download="" href=""></a>
+    <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+    <div class="layui-body" style="overflow: auto;">
+        <div id="analysis" style="margin: 0;height: 390px;width: 100%;">
+            <div class="layui-inline" style="position:absolute;z-index: 1;left: 3%;top: 0.5%">
+                日期范围：
+                <a id="date" th:text="${startDate + ' ~ ' + endDate}"></a>
+            </div>
+            <div id="test2" class="layui-inline" style="position:absolute;z-index: 1;right: 5%;border: ridge">
+                时间范围选择
+                <input type="text" style="display: none" class="layui-input" id="test1">
+            </div>
+            <div  class="layui-inline" style="position:absolute;z-index: 1;right: 15%;">
+                排名选择
+                <select id="topSelect" style="border: ridge">
+                    <option value="3" th:selected="${top=='3'}">TOP3</option>
+                    <option value="4" th:selected="${top=='4'}">TOP4</option>
+                    <option value="5" th:selected="${top=='5'}">TOP5</option>
+                    <option value="6" th:selected="${top=='6'}">TOP6</option>
+                    <option value="7" th:selected="${top=='7'}">TOP7</option>
+                    <option value="8" th:selected="${top=='8'}">TOP8</option>
+                    <option value="9" th:selected="${top=='9'}">TOP9</option>
+                    <option value="10"th:selected="${top=='10'}">TOP10</option>
+                </select>
+            </div>
+            <div id="main" style="height: 100%;width: 100%"></div>
+        </div>
+        <table class="layui-table" lay-skin="line" style="margin: 0;min-width: 1063px;max-width: 100%;">
+            <thead>
+            <tr>
+                <div>
+                    <th lay-data="{field:'top'}"><!-- <a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}"> -->&emsp;&emsp;TOP</a></th>
+                    <th lay-data="{field:'fileId'}"><!-- <a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}"> -->&emsp;&emsp;文件ID</a><!-- <a th:if="${type=='name'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a> --></th>
+                    <th lay-data="{field:'pwd'}">次数</th>
+                    <th lay-data="{field:'top'}"><!-- <a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}"> -->&emsp;&emsp;TOP</a></th>
+                    <th lay-data="{field:'userId'}"><!-- <a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}"> -->&emsp;&emsp;用户ID</a><!-- <a th:if="${type=='name'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a> --></th>
+                    <th lay-data="{field:'pwd'}">次数</th>
+                </div>
+            </tr>
+            </thead>
+            <tbody>
+                <tr  th:if="${lines!=null}" th:each="line:${lines}">
+                    <td>
+                        <a th:text="${'&emsp;&emsp;' + line.split(':')[1]}"></a>
+                    </td>
+                    <td>
+                        <a th:onclick="openInfo('fileId', [[${line.split(':')[0]}]])" th:text="${'&emsp;&emsp;&ensp;' + line.split(':')[0]}"></a>
+                    </td>
+                    <td>
+                        <a th:if="${line.split(':')[3]=='file_upload_'}"><i class="layui-icon">&#xe62f;</i>&ensp;被上传次数：<a th:text="${line.split(':')[2]}"></a></a>
+                        <a th:if="${line.split(':')[3]=='file_download_'}"><i class="layui-icon">&#xe601;</i>&ensp;被下载次数：<a th:text="${line.split(':')[2]}"></a></a>
+                    </td>
+                    <td>
+                        <a th:text="${'&emsp;&emsp;' + line.split(':')[5]}"></a>
+                    </td>
+                    <td>
+                        <a th:onclick="openInfo('user', [[${line.split(':')[4]}]])" th:text="${'&emsp;&emsp;&ensp;' + line.split(':')[4]}"></a>
+                    </td>
+                    <td>
+                        <a th:if="${line.split(':')[7]=='user_upload_'}"><i class="layui-icon">&#xe62f;</i>&ensp;上传次数：<a th:text="${line.split(':')[6]}"></a></a>
+                        <a th:if="${line.split(':')[7]=='user_download_'}"><i class="layui-icon">&#xe601;</i>&ensp;下载次数：<a th:text="${line.split(':')[6]}"></a></a>
+                        <a th:if="${line.split(':')[7]=='user_share_'}"><i class="layui-icon">&#xe756;</i>&ensp;分享次数：<a th:text="${line.split(':')[6]}"></a></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="layui-footer">
+        © hadoop.pan.com - 网盘
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+</body>
+<!--    <script type="text/javascript" src="/js/spark-md5.js"></script>-->
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/js/pan-admin-function.js"></script>
+<script type="text/javascript" src="/echarts/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/echarts/dist/echarts.min.js"></script>
+<script>
+    $("#topSelect").change(function(){
+        let startDate = document.getElementById("date").innerText.split("~")[0].trim();
+        let endDate = document.getElementById("date").innerText.split("~")[1].trim();
+        let selectTop = $("#topSelect").val();
+        window.location.href="/analysis?type=top&startDate=" + startDate + "&endDate=" + endDate + "&top=" + selectTop;
+    });
+    layui.use(['layer', 'element', 'upload', 'laydate'], function() {
+        layer = layui.layer;
+        element = layui.element;
+        laydate = layui.laydate;
+        //双控件
+        laydate.render({
+            elem: '#test1',
+            eventElem: '#test2',
+            type: 'date',
+            trigger: 'click',
+            range: '~',
+            min: '2020-11-28',
+            max: 0,
+            done: function(value) {
+                let startDate = value.split("~")[0].replace(' ','');
+                let endDate = value.split("~")[1].replace(' ','');
+                let selectTop = $("#topSelect").val();
+                window.location.href="/analysis?type=top&startDate=" + startDate + "&endDate=" + endDate + "&top=" + selectTop;
+            }
+        });
+    });
+
+    var analysisTop = echarts.init(document.getElementById("main"));
+    analysisTop.setOption({
+        title: [{
+            text: '文件排行榜',
+            left: '30%',
+        },
+            {
+                text: '用户排行榜',
+                right: '30%',
+            }],
+        aria: {
+            show: true,
+        },
+        tooltip : {
+            trigger: 'item',
+            formatter: p => {
+                if(p.seriesName == '被上传' || p.seriesName == '被下载')
+                    return '文件ID：' + p.data[2] + '<br>' + p.seriesName +'次数：' + p.data[0];
+                else
+                    return '学号：' + p.data[2] + '<br>' + p.seriesName +'次数：' + p.data[0];
+            }
+        },
+        // backgroundColor: '#eee',
+        legend: [{
+            top: '8%',
+            right: '25%',
+            data:['上传', '下载', '分享']
+        },{
+            top: '8%',
+            left: '28%',
+            data:['被上传', '被下载']
+        }],
+        grid: [{
+            left: '52.5%',
+            right: '3%',
+            top: '15%',
+            bottom: '10%',
+        }, {
+            left: '3%',
+            right: '52%',
+            top: '15%',
+            bottom: '10%',
+        }],
+        xAxis : [
+            {
+                type: 'value',
+            },
+            {
+                type: 'value',
+                gridIndex: 1,
+                inverse: true,
+            }
+        ],
+        yAxis : [
+            {
+                type : 'category',
+                show: false,
+                inverse: true,
+            },
+            {
+                type : 'category',
+                show: true,
+                gridIndex: 1,
+                inverse: true,
+                position:'right',
+            }
+        ],
+        series: [],
+    });
+    let startDate = document.getElementById("date").innerText.split("~")[0].trim();
+    let endDate = document.getElementById("date").innerText.split("~")[1].trim();
+    let selectTop = $("#topSelect").val();
+    $.ajax({
+        method: 'post',
+        data:{
+            startDate: startDate,
+            endDate: endDate,
+            top: selectTop
+        },
+        url: '/analysisTop',
+        success: function (topDatas) {
+
+            analysisTop.setOption({
+                series: [{
+                    name:'上传',
+                    type:'bar',
+                    label: {
+                        normal: {
+                            show: true,
+                            position: 'right',
+                            textStyle: {
+                                color: 'black',
+                            }
+                        }
+                    },
+                    data:topDatas[0],
+                },
+                    {
+                        name:'下载',
+                        type:'bar',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'right',
+                                textStyle: {
+                                    color: 'black',
+                                }
+                            }
+                        },
+                        data:topDatas[1],
+                    },
+                    {
+                        name:'分享',
+                        type:'bar',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'right',
+                                textStyle: {
+                                    color: 'black',
+                                }
+                            }
+                        },
+                        data:topDatas[2],
+                    },
+                    {
+                        name:'被上传',
+                        type:'bar',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'left',
+                                textStyle: {
+                                    color: 'black',
+                                }
+                            }
+                        },
+                        data:topDatas[3],
+                    },
+                    {
+                        name: '被下载',
+                        type: 'bar',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'left',
+                                textStyle: {
+                                    color: 'black',
+                                }
+                            }
+                        },
+                        data: topDatas[4],
+                    }
+                ]
+            });
+        }
+    })
+
+    function openInfo(type, id) {
+        if(type == 'fileId'){
+            layer.open({
+                type: 2,
+                content: '/showInfo?type=' + type + '&id=' + id,
+                area: ['400px', '330px'],
+                maxmin: true,
+                title: '文件详细信息',
+            });
+        }
+        else{
+            layer.open({
+                type: 2,
+                content: '/showInfo?type=' + type + '&id=' + id,
+                area: ['400px', '550px'],
+                maxmin: true,
+                title: '用户详细信息',
+            });
+        }
+    }
+</script>
+</html>

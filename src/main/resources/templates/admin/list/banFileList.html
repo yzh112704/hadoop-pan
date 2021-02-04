@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>        <ul class="layui-nav layui-layout-right">
+            <div class="layui-form layui-input-inline" style="width: 100px;color: #000000;right: 40px;">
+                <select id="searchSelect">
+                    <option value="file_name">文件名</option>
+                    <option value="currentChunk">大小</option>
+                    <option value="totalChunks">日期</option>
+                </select>
+            </div>
+            <div class="layui-form layui-input-inline" style="width: 150px;right: 35px;">
+                <input id="search" type="text" class="layui-input" placeholder="搜索">
+            </div>
+            <li class="layui-nav-item" style="right: 30px">
+                <a th:text="${admin.id}">
+                    <span class="layui-nav-more"></span>
+                </a>
+                <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a th:onclick="openEdit('admin', [[${admin.id}]])">修改基本资料</a></dd>
+                    <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+    </div>
+    <div class="layui-side layui-blay-reqText layui-bg-black">
+        <ul class="layui-nav layui-bg-cyan layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe63c;</i>&ensp;列表</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/allList(type=user)}"><i class="layui-icon">&#xe770;</i>&ensp;用户列表</a></dd>
+                    <dd><a th:if="${admin.level!='common'}" th:href="@{/allList(type=admin)}"><i class="layui-icon">&#xe612;</i>&ensp;管理员列表</a></dd>
+                    <dd><a th:href="@{/allList(type=file)}"><i class="layui-icon">&#xe60a;</i>&ensp;文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=banFile)}"><i class="layui-icon">&#xe64f;</i>&ensp;被禁用文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=share)}"><i class="layui-icon">&#xe609;</i>&ensp;分享链接列表</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe629;</i>&ensp;数据分析</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/analysis(type='day')}"><i class="layui-icon">&#xe62c;</i>&ensp;日常分析</a></dd>
+                    <dd><a th:href="@{/analysis(type='top',top='3')}"><i class="layui-icon">&#xe604;</i>&ensp;排行榜</a></dd>
+                    <dd><a th:href="@{/analysis(type='share',top='3')}"><i class="layui-icon">&#xe64c;</i>&ensp;分享链接分析</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <a id="download" download="" href=""></a>
+    <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+    <div class="layui-body" style="overflow: auto;">
+        <div style="min-height: 400px">
+            <table class="layui-table" lay-skin="line" style="margin: 0;min-width: 1063px;max-width: 100%;">
+            <thead>
+            <tr>
+                <th lay-data="{field:'file_name'}"><a id="sortFile_name" name="sorts" onclick="sortBy('banFiles', 'file_name', 'down', 'sortFile_name')" style="cursor:pointer">文件名 </a></th>
+                <th lay-data="{field:'currentChunk'}"><a id="sortSize" name="sorts" onclick="sortBy('banFiles', 'currentChunk', 'down', 'sortSize')" style="cursor:pointer">文件大小 </a></th>
+                <th lay-data="{field:'totalChunks'}"><a id="sortDate" name="sorts" onclick="sortBy('banFiles', 'totalChunks', 'down', 'sortDate')" style="cursor:pointer">日期 </a></th>
+                <th th:if="${admin.level!='common'}" lay-data="{field:'function'}"></th>
+            </tr>
+            </thead>
+            <!-- 表格数据加载 -->
+            <tbody id="tab_list">
+            </tbody>
+        </table>
+        </div>
+        <!-- 存放分页的容器 -->
+        <div id="layui" style="text-align: center;"></div>
+    </div>
+    <div class="layui-footer">
+        © hadoop.pan.com - 网盘
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/js/Pinyin.js"></script>
+<script type="text/javascript" src="/js/pan-admin-list.js"></script>
+<script type="text/javascript" src="/js/pan-admin-function.js"></script>
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script>
+    layui.use(['layer', 'element', 'upload', 'laydate', 'form'], function() {
+        layer = layui.layer;
+        element = layui.element;
+        laydate = layui.laydate;
+        form = layui.form;
+    });
+
+    $(allListBanFiles());
+</script>
+</html>

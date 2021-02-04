@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>忘记密码</title>
+        <link rel="stylesheet" href="/layui/css/layui.css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+    </head>
+    <body>
+    <form class="layui-form layui-form-pane1" th:action="@{/userForgot}" lay-filter="first" style="margin: 0 auto;width: 340px;">
+        <label class="layui-form-label" style="width: 330px;text-align: center">
+            请认真填写注册时的信息<br>
+            核对完信息后会发送邮件到账号注册的邮箱。
+        </label>
+        <div class="layui-form-item" style="margin-top: 15px">
+            <label class="layui-form-label">学号</label>
+            <div class="layui-input-block" style="width:220px">
+                <input type="text" name="id" lay-verify="required|id"  placeholder="输入学号" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-block" style="width:220px">
+                <input type="text" name="name" lay-verify="required" lay-reqText="姓名不能为空" required placeholder="输入姓名" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱</label>
+            <div class="layui-input-block" style="width:220px">
+                <input type="email" name="mail" lay-verify="required|email" lay-reqText="邮箱不能为空" required placeholder="输入邮箱" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <label class="layui-form-label" style="width: 330px;text-align: center">
+            <a th:text="${forgotResult!=null?forgotResult:''}" style="color: red"></a>
+        </label>
+        <div class="layui-form-item">
+            <div class="layui-input-block" style="margin-left: 140px;">
+                <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+            </div>
+        </div>
+    </form>
+    </body>
+    <script type="text/javascript" src="/layui/layui.js"></script>
+    <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+    <script>
+        layui.use(['layer', 'form', 'laydate', 'element', 'layedit', 'upload'], function() {
+            var form = layui.form,
+                laydate = layui.laydate;
+
+            //自定义验证规则
+            form.verify({
+                pass: function(value){
+                    if(value!=""){
+                        if(!/(.+){6,12}$/.test(value))
+                            return "密码必须6到12位!";
+                    }
+                },
+            });
+
+            //日期
+            laydate.render({
+                elem: '#date'
+            });
+
+            //监听提交
+            form.on('submit(*)', function(data) {
+                return true;
+            });
+        });
+</script>
+</html>

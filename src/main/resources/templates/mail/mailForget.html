@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>忘记密码</title>
+    </head>
+    <body>
+        <p>
+            亲爱的用户：
+        </p>
+        <p>
+            &ensp;&ensp;您好！感谢您使用 Hadoop校园网盘 找回密码服务，您的账号 <a th:text="${id}"></a> 提交忘记密码申请，
+            <i style="font-style: normal;color: red">如果不是本人操作提交，请忽略本邮件。</i>
+            <br>请点击 <a th:href="${url}">此链接</a> ，修改您的账户密码！(请在1小时内完成操作)
+        </p>
+    </body>
+</html>

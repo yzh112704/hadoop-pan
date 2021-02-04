@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" style="right: 30px">
+                <a th:text="${admin.id}">
+                    <span class="layui-nav-more"></span>
+                </a>
+                <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a th:onclick="openEdit('admin', [[${admin.id}]])">修改基本资料</a></dd>
+                    <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <!-- 头部区域 -->
+    </div>
+    <div class="layui-side layui-blay-reqText layui-bg-black">
+        <ul class="layui-nav layui-bg-cyan layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe63c;</i>&ensp;列表</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/allList(type=user)}"><i class="layui-icon">&#xe770;</i>&ensp;用户列表</a></dd>
+                    <dd><a th:if="${admin.level!='common'}" th:href="@{/allList(type=admin)}"><i class="layui-icon">&#xe612;</i>&ensp;管理员列表</a></dd>
+                    <dd><a th:href="@{/allList(type=file)}"><i class="layui-icon">&#xe60a;</i>&ensp;文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=banFile)}"><i class="layui-icon">&#xe64f;</i>&ensp;被禁用文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=share)}"><i class="layui-icon">&#xe609;</i>&ensp;分享链接列表</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe629;</i>&ensp;数据分析</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a th:href="@{/analysis(type='day')}">
+                            <i class="layui-icon">&#xe62c;</i>&ensp;日常分析
+                        </a>
+                    </dd>
+                    <dd>
+                        <a th:href="@{/analysis(type='top',top='3')}">
+                            <i class="layui-icon">&#xe604;</i>&ensp;排行榜
+                        </a>
+                    </dd>
+                    <dd>
+                        <a th:href="@{/analysis(type='share',top='3')}">
+                            <i class="layui-icon">&#xe64c;</i>&ensp;分享链接分析
+                        </a>
+                    </dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <a id="download" download="" href=""></a>
+    <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+    <div class="layui-body" style="overflow: auto;">
+        <div id="analysis" style="margin: 0;height: 100%;max-width: 100%;">
+            <div class="layui-inline" style="position:absolute;z-index: 1;left: 3%;top: 0.5%;">
+                日期范围：
+                <a id="date" th:text="${startDate + ' ~ ' + endDate}"></a>
+            </div>
+            <div id="test2" class="layui-inline" style="position:absolute;z-index: 1;right: 10%;top: 0.5%;border: ridge">
+                时间范围选择
+                <input type="text" style="display: none" class="layui-input" id="test1">
+            </div>
+            <div id="main" style="height: 100%;width: 100%"></div>
+        </div>
+    </div>
+    <div class="layui-footer">
+        © hadoop.pan.com - 网盘
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+</body>
+
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/js/pan-admin-function.js"></script>
+<script type="text/javascript" src="/echarts/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/echarts/dist/echarts.min.js"></script>
+<script>
+    layui.use(['layer', 'element', 'upload', 'laydate'], function() {
+        layer = layui.layer;
+        element = layui.element;
+        laydate = layui.laydate;
+        //双控件
+        laydate.render({
+            elem: '#test1',
+            eventElem: '#test2',
+            type: 'date',
+            trigger: 'click',
+            range: '~',
+            min: '2020-11-28',
+            max: 0,
+            done: function(value) {
+                var startDate = value.split("~")[0].replace(' ','');
+                var endDate = value.split("~")[1].replace(' ','');
+                console.log(startDate, endDate);
+                myChart.setOption({
+                    dataZoom: [{
+                        startValue: startDate,
+                        endValue: endDate
+                    }]
+                })
+            }
+        });
+    });
+
+    var myChart = echarts.init(document.getElementById("main"));
+    myChart.setOption({
+        title: {
+            text: '日常分析',
+            x: 'center'
+        },
+        legend: {
+            top: '6%'
+        },
+        tooltip: {},
+        xAxis: {
+            type: 'category'
+        },
+        yAxis: {
+        },
+        grid: {
+            left: '6%',
+            right: '6%',
+            bottom: 80
+        },
+        dataZoom: [{
+            type: 'slider',
+        }, {
+            type: 'inside'
+        }]
+    });
+    $.ajax({
+        method: 'post',
+        url: '/analysisByDay',
+        success: function (data) {
+            myChart.setOption({
+                series: [{
+                    name: '上传',
+                    type: 'line',
+                    data: data[0],
+                    label: {
+                        normal: {
+                            show: true,
+                        },
+                    }
+                }, {
+                    name: '下载',
+                    type: 'line',
+                    data: data[1],
+                    label: {
+                        normal: {
+                            show: true,
+                        },
+                    }
+                }, {
+                    name: '分享',
+                    type: 'line',
+                    data: data[2],
+                    label: {
+                        normal: {
+                            show: true,
+                        },
+                    }
+                }]
+            });
+        }
+    })
+</script>
+</html>

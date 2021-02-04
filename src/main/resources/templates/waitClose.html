@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>操作结果</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black" th:fragment="header">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+    </div>
+    <div class="layui-body" style="left: 0px;text-align: justify;top: 30%;">
+        <div id="page" style="border-style:dashed;border-color:#e4e4e4;width:350px;line-height:30px;margin: 0 auto;">
+            <br><br>
+            <h1>
+                <div th:if="${code=='unboundMail'}">
+                    已发送解绑邮箱邮件到您当前使用的邮箱，请在30分钟内到邮箱中完成操作。
+                </div>
+                <div th:if="${code=='boundMail'}">
+                    已发送绑定邮箱邮件到您将要绑定的邮箱，请在30分钟内到邮箱中完成操作。
+                </div>
+                <div th:if="${code=='forgotMail'}">
+                    已发送修改密码邮件到您注册的邮箱，请在1小时内到邮箱中完成操作。
+                </div>
+            </h1><br><br>
+            本页面将在<a id="sp" text="${x}">15</a>s后关闭。<a onclick="closeThis()">立即关闭</a>
+        </div>
+    </div>
+    <div class="layui-footer" style="left: 0px;">
+        <!-- 底部固定区域 -->
+        © hadoop.pan.com - 网盘
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script>
+    layui.use(['layer', 'element', 'upload'], function() {
+        layer = layui.layer;
+    });
+    onload = function() {
+        setInterval(go, 1000);
+    };
+    var x = 15; //利用了全局变量来执行
+    function go() {
+        x--;
+        if (x > 0) {
+            document.getElementById("sp").innerHTML = x; //每次设置的x的值都不一样了。
+        } else {
+            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+            //layer.msg(index);
+            parent.layer.close(index); //再执行关闭
+        }
+    }
+    function closeThis() {
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        //layer.msg(index);
+        parent.layer.close(index); //再执行关闭
+    }
+</script>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>文件详细信息</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body>
+    <div class="layui-form-item" style="margin-top: 15px">
+        <label class="layui-form-label">文件ID：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${fileInfo.file_id!=null?fileInfo.file_id:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">文件名：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${fileInfo.file_name!=null?fileInfo.file_name:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">文件大小：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${fileInfo.currentChunk!=null?fileInfo.currentChunk:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">状态：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${fileInfo.totalChunks!=null?fileInfo.totalChunks:''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">上传日期：</label>
+        <div class="layui-input-block" style="width:220px">
+            <input type="text" class="layui-input" style="color: gray;" readonly th:value="${fileInfo.file_type!=null?fileInfo.file_type:''}">
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>注册邮件</title>
+    </head>
+    <body>
+        <p>
+            亲爱的用户：
+        </p>
+        <p>
+            &ensp;&ensp;您好！感谢您使用 Hadoop校园网盘 注册服务，这是一封激活邮件，
+            <i style="font-style: normal;color: red">如果不是本人操作提交，请忽略本邮件。</i><br>
+            请点击 <a th:href="${url}">此链接</a> ，完成账户激活！(请在30分钟内完成操作）
+        </p>
+    </body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <title>hadoop网盘</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="format-detection" content="telephone=no">
+        <link rel="stylesheet" href="/layui/css/layui.css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+        <style>
+            .hidden-button {
+                background-color: rgba(242,242,242,0);
+                border: none;
+                height: 30px;
+                width: 30px;
+                opacity:0;
+            }
+            td:hover .hidden-button {
+                opacity:1;
+            }
+            .layui-icon{
+                font-size: 17px;
+                cursor:pointer
+            }
+        </style>
+    </head>
+    <body class="layui-layout-body">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header  layui-bg-black">
+                <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>                <ul class="layui-nav layui-layout-right">
+                    <li class="layui-nav-item" style="right: 30px">
+                        <a th:text="${loginUser.name}">
+                            <span class="layui-nav-more"></span></a>
+                        <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                            <dd><a onclick="editInfo()">修改基本资料</a></dd>
+                            <dd><a onclick="changePwd()">修改密码</a></dd>
+                            <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+                <!-- 头部区域（可配合layui已有的水平导航） -->
+            </div>
+            <div class="layui-side layui-blay-reqText layui-bg-black">
+                <ul class="layui-nav layui-bg-cyan layui-nav-tree" lay-filter="test">
+                    <li class="layui-nav-item  layui-nav-itemed">
+                        <a class=""><i class="layui-icon">&#xe61d;&ensp;我的文件</i></a>
+                        <dl class="layui-nav-child">
+                            <dd><a th:href="@{/fileList(fileType=all)}"><i class="layui-icon">&#xe62a;&ensp;全部</i></a></dd>
+                            <dd><a th:href="@{/fileList(fileType=img)}"><i class="layui-icon">&#xe64a;&ensp;图片</i></a></dd>
+                            <dd><a th:href="@{/fileList(fileType=document)}"><i class="layui-icon">&#xe63c;&ensp;文档</i></a></dd>
+                            <dd><a th:href="@{/fileList(fileType=video)}"><i class="layui-icon">&#xe6ed;&ensp;视频</i></a></dd>
+                            <dd><a th:href="@{/fileList(fileType=other)}"><i class="layui-icon">&#xe621;&ensp;其他</i></a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a th:href="@{/fileList(fileType=share)}"><i class="layui-icon">&#xe609;&ensp;我的分享</i></a>
+                    </li>
+                    <li class="layui-nav-item layui-bg-black" style="position: fixed;bottom: 0;width: 200px">
+                        <!-- 0%~60% green  60%~80% orange  80%~100% red -->
+                        <dd class="layui-progress layui-progress-big" lay-showPercent="yes">
+                            <div th:class="|layui-progress-bar layui-bg-${loginUser.surplus_space}|"
+                                 th:lay-percent="${loginUser.totalSpace} + '%'"></div>
+                        </dd>
+                        <dd>
+                            <p style="display: block; color: #FFF; text-align: center" th:text="${'总空间大小：' + loginUser.use_space}"></p>
+                            <p style="display: block; color: #FFF; text-align: center" th:text="${loginUser.use_space=='500.00MB'?'个人信息不完整，请完善个人信息获取2GM空间大小':''}"></p>
+                        </dd>
+                    </li>
+                </ul>
+            </div>
+            <a id="download" download="" href=""></a>
+            <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+            <div class="layui-body" style="overflow: overlay;">
+                <div th:if="${fileType!='share'}" class="layui-upload" style="padding: 10px 0px 10px 13px;margin: 0;min-width: 1063px;max-width: 100%;">
+                    <input hidden="hidden" id="file" type="file">
+                    <button th:if="${fileType==null || fileType=='all'}" type="button" class="layui-btn" onclick="clickUploadFile()">
+                        <i class="layui-icon">&#xe67c;</i>上传文件
+                    </button>
+                    <button th:if="${fileType==null || fileType=='all'}" type="button" class="layui-btn" th:onclick="mkdir([[${parentId}]], [[${loginUser.id}]])">
+                        <i class="layui-icon">&#xe654;</i>新建文件夹
+                    </button>
+                    <button type="button" class="layui-btn" onclick="choiceShare('select')">
+                        <i class="layui-icon">&#xe641;</i>分享
+                    </button>
+                    <button type="button" class="layui-btn" th:onclick="copyOrMoveOrSaveDirs('move', [[${loginUser.Id}]])">
+                        <i class="layui-icon">&#xe65b;</i>移动到
+                    </button>
+                    <button type="button" class="layui-btn" th:onclick="copyOrMoveOrSaveDirs('copy', [[${loginUser.Id}]])">
+                        <i class="layui-icon">&#xe630;</i>复制到
+                    </button>
+                    <button type="button" class="layui-btn" th:onclick="deleteDirs('select', [[${parentId}]], [[${loginUser.id}]])">
+                        <i class="layui-icon">&#xe640;</i>删除
+                    </button>
+                    <a th:if="${parentId!=loginUser.id&&parentId!=null&&path!='null'&&fileType==null}" th:href="@{/returnDirList(parentId=${parentId})}" style="padding: 0px 0px 0px 10px">
+                        <button type="button" class="layui-btn" onclick=""><i class="layui-icon">&#xe65c;</i>返回</button>
+                    </a>
+                </div>
+                <table class="layui-table" lay-skin="line" style="margin: 0;min-width: 1063px;max-width: 100%;">
+                    <thead>
+                        <tr>
+                            <div th:if="${fileType!='share'&&fileType!=null}">
+                                <th lay-data="{field:'dirName'}" style="width: 300px">
+                                    <input id="allboxs" name="allboxs" type="checkbox">&ensp;
+                                    <a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}">文件名&emsp;</a>
+                                    <a th:if="${type=='name'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a>
+                                </th>
+                                <th lay-data="{field:'function'}" style="width: 100px"></th>
+                                <th lay-data="{field:'size'}" style="width: 50px">
+                                    <a th:href="@{/fileList(fileType=${fileType}, type='size', upOrDown=${upOrDown!=null?upOrDown:'up'})}">大小&emsp;</a>
+                                    <a th:if="${type=='size'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a>
+                                </th>
+                                <th lay-data="{field:'date'}" style="width: 100px">
+                                    <a th:href="@{/fileList(fileType=${fileType}, type='date', upOrDown=${upOrDown!=null?upOrDown:'up'})}">日期&emsp;</a>
+                                    <a th:if="${type=='date'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a>
+                                </th>
+                            </div>
+                            <div th:if="${fileType!='share'&&fileType==null}">
+                                <th lay-data="{field:'dirName'}" style="width: 300px">
+                                    <input id="allboxs" name="allboxs" type="checkbox">&ensp;
+                                    <a th:href="@{/dirList(dirId=${parentId}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}">文件名&emsp;</a>
+                                    <a th:if="${type=='name'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a>
+                                </th>
+                                <th lay-data="{field:'function'}" style="width: 100px"></th>
+                                <th lay-data="{field:'size'}" style="width: 50px">
+                                    <a th:href="@{/dirList(dirId=${parentId}, type='size', upOrDown=${upOrDown!=null?upOrDown:'up'})}">大小&emsp;</a>
+                                    <a th:if="${type=='size'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a></th>
+                                <th lay-data="{field:'date'}" style="width: 100px">
+                                    <a th:href="@{/dirList(dirId=${parentId}, type='date', upOrDown=${upOrDown!=null?upOrDown:'up'})}">日期&emsp;</a>
+                                    <a th:if="${type=='date'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a></th>
+                            </div>
+                            <div th:if="${fileType=='share'}">
+                                <th lay-data="{field:'url'}">链接地址</th>
+                                <th lay-data="{field:'pwd'}">口令(点击复制链接)</th>
+                                <th lay-data="{field:'date'}">
+                                    <a th:href="@{/fileList(fileType=${fileType}, type='date', upOrDown=${upOrDown!=null?upOrDown:'up'})}">失效日期&emsp;</a>
+                                    <a th:if="${type=='date'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a>
+                                </th>
+                                <th></th>
+                            </div>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${dirs!=null}" th:each="dir:${dirs}">
+                            <a th:if="${dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <input type="checkbox" name="boxs" th:id="${dir.dir_id}">&ensp;
+                                    <img th:src="'images/filetype/'+ ${dir.file_type} + '.ico'" style="height: 30px;"></img>&ensp;
+                                    <a th:href="@{/dirList(dirId=${dir.dir_id})}" th:text="${dir.getDir_name()}"></a>
+                                </td>
+                                <td>
+                                    <button class="hidden-button" th:onclick="rename([[${dir.dir_id}]], [[${dir.dir_name}]])"><i
+                                            class="layui-icon">&#xe642;</i></button>
+                                    <button class="hidden-button" th:onclick="deleteDirs([[${dir.dir_id}]], [[${parentId}]], [[${loginUser.id}]])"><i class="layui-icon">&#xe640;</i>
+                                    </button>
+                                    <button class="hidden-button" th:onclick="choiceShare([[${dir.dir_id}]])"><i class="layui-icon">&#xe641;</i>
+                                    </button>
+                                </td>
+                                <td>---</td>
+                                <td><a th:text="${dir.date}"></a></td>
+                            </a>
+                            <a th:if="${!dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><input
+                                        type="checkbox" name="boxs" th:id="${dir.dir_id}">&ensp;<img th:src="'images/filetype/'+ ${dir.file_type} + '.ico'"
+                                        style="height: 30px;"></img>&ensp;<a th:text="${dir.getDir_name()}"></a></td>
+                                <td>
+                                    <button class="hidden-button" th:onclick="rename([[${dir.dir_id}]], [[${dir.dir_name}]])">
+                                        <i class="layui-icon">&#xe642;</i></button>
+                                    <button class="hidden-button" th:onclick="deleteDirs([[${dir.dir_id}]], [[${parentId}]], [[${loginUser.id}]])"><i class="layui-icon">&#xe640;</i>
+                                    </button>
+                                    <button class="hidden-button" th:onclick="choiceShare([[${dir.dir_id}]])"><i class="layui-icon">&#xe641;</i>
+                                    </button>
+                                    <button class="hidden-button" th:onclick="downloadFile([[${dir.dir_id}]], [[${dir.dir_name}]])"><i
+                                            class="layui-icon">&#xe601;</i>
+                                    </button>
+                                </td>
+                                <td><a th:text="${dir.file_size}"></a></td>
+                                <td><a th:text="${dir.date}"></a></td>
+                            </a>
+                        </tr>
+                        <tr th:if="${shares!=null}" th:each="share:${shares}">
+                            <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                <a th:if="${share.expired!='已过期'}">
+                                    <i class="layui-icon">&#xe64c;</i>&ensp;
+                                    <a th:onclick="openShare([[${share.share_md5}]])" th:text="${share.share_md5}"></a>
+                                </a>
+                                <a th:if="${share.expired=='已过期'}">
+                                    <i class="layui-icon">&#xe64d;</i>&ensp;
+                                    <a th:text="${share.share_md5}"></a>
+                                </a>
+                            </td>
+                            <td><i class="layui-icon">&#xe683;</i>&ensp;<a th:onclick="copyShare([[${share.share_md5}]], [[${share.key}]])" th:text="${share.key}"></a></td>
+                            <td>
+                                <a th:if="${share.expired=='永久'}" th:text="${share.expired}" style="color: blue"></a>
+                                <a th:if="${share.expired=='已过期'}" th:text="${share.expired}" style="color: gray"></a>
+                                <a th:if="${share.expired!='永久'&&share.expired!='已过期'}" th:text="${share.expired}"></a>
+                            </td>
+                            <td>
+                                <button th:if="${share.expired!='已过期'}" class="layui-btn demo" th:onclick="cancelShare([[${share.share_md5}]])">
+                                    <i class="layui-icon">&#xe64d;</i>&ensp;禁用链接
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="layui-footer">
+                <!-- 底部固定区域 -->© hadoop.pan.com - 网盘</div>
+        </div>
+        <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="/layui/layui.js"></script>
+        <script type="text/javascript" src="/js/spark-md5.js"></script>
+        <script type="text/javascript" src="/js/pan-user-function.js"></script>
+        <script>
+            layui.use(['layer', 'element', 'upload'], function() {
+                layer = layui.layer;
+                element = layui.element;
+            });
+
+
+
+            //上传文件按钮触发
+            function clickUploadFile() {
+                $('#file')[0].click();
+            }
+            // file内容改变时触发
+            $('#file').on('change', function() {
+                //弹出分析文件进度条
+                var progressLayer = layer.open({
+                    type: 0,
+                    title: false,
+                    closeBtn: 0,
+                    btn: false,
+                    content: '分析文件： ' +
+                        '<div class="layui-progress layui-progress-big" lay-filter="check" lay-showpercent="true">' +
+                        '<div class="layui-progress-bar">' +
+                        '<p id="checkPercent"></p>' +
+                        '</div></div>'
+                });
+                /* 计算md5*/
+                var fileReader = new FileReader();
+                //file的slice方法
+                var blobSlice = File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice;
+                // 获取文件数据
+                var file = document.getElementById("file").files[0];
+                // 获取文件名
+                var fileName = file.name;
+                // 读取时分块大小2MB
+                var chunkSize = 2097152;
+                // 计算总块数
+                var chunks = Math.ceil(file.size / chunkSize);
+				// 当前块数
+				var currentChunk = 0;
+				// 计算md5工具
+                var spark = new SparkMD5();
+                // fileReader变化时执行
+                fileReader.onload = function(e) {
+                    spark.appendBinary(e.target.result);
+                    /* append binary string*/
+                    currentChunk++;
+                    if (currentChunk < chunks) {
+                        loadNext();
+                    } else {
+                        console.log("finished loading");
+                        var md5 = spark.end();
+                        console.info("computed hash", md5);
+                        // md5计算完成后发送给服务器计算结果
+                        sendMd5(md5, fileName);
+                    }
+                };
+                // 读取下一块数据
+                function loadNext() {
+                    var start = currentChunk * chunkSize,
+                        end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+                    // 读取切割的文件。blobSlice.call指定file和开始结束的片段，得到切割的文件。
+                    fileReader.readAsBinaryString(blobSlice.call(file, start, end));
+                    let percent = Math.floor(((currentChunk + 1) / chunks) * 100) + '%';
+                    console.log("check: ", percent);
+                    element.progress('check', percent)
+                    if(currentChunk % 4 == 0)
+                        $('#checkPercent').text(percent);
+                    if(percent  == '100%'){
+                        $('#checkPercent').text('分析完毕');
+                        //关闭弹出层
+                        layer.close(progressLayer);
+                    }
+                };
+                loadNext();
+                /* 发送md5信息到服务器*/
+                function sendMd5(md5, fileName) {
+                    console.log('md5: ' + md5)
+                    $.ajax({
+                        url: "/checkFile",
+                        type: "POST",
+                        data: {
+                            md5: md5,
+                            fileName: fileName
+                        },
+                        success: function(data) {
+                            // 返回结果（该文件是否已经上传过且已上传完成）
+                            if (data == "exist"){
+                                layer.msg('秒传');
+                                uploadFileInfo(md5);
+                            }
+                            else if(data == 'big'){
+                                layer.msg('上传失败，文件大小超过上限！！');
+                            }
+                            else {
+                                console.log('checkFile outcome currentChunk: ', data);
+                                uploadFile(md5, data);
+                            }
+                        }
+                    });
+                }
+                /* md5信息不存在，上传文件到服务器*/
+                function uploadFile(md5, chunk) {
+                    //弹出分析文件进度条
+                    element.init();
+                    var progressLayer = layer.open({
+                        type: 0,
+                        title: false,
+                        closeBtn: 0,
+                        btn: false,
+                        content: '上传文件： <div class="layui-progress layui-progress-big" lay-filter="upload" lay-showPercent="yes"><div class="layui-progress-bar"><p id="uploadPercent"></p></div></div>'
+                    });
+                    var fileReader = new FileReader();
+                    //file的slice方法
+                    var blobSlice = File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice;
+                    // 获取文件数据
+                    var file = document.getElementById("file").files[0];
+                    // 读取时分块大小2MB
+                    var chunkSize = 2097152;
+                    // 计算总块数
+                    var chunks = Math.ceil(file.size / chunkSize);
+                    // 当前块数
+                    var currentChunk = parseInt(chunk);
+                    // fileReader变化时执行
+                    fileReader.onload = function(e) {
+                        let formData = new FormData();
+                        // 文件md5
+                        formData.append("md5", md5)
+                        // 上传的当前块编号
+                        formData.append("currentChunk", currentChunk + 1);
+                        // 上传的总块数
+                        formData.append("totalChunks", chunks);
+                        // 块数据内容
+                        let start = currentChunk * chunkSize;
+                        let end = (currentChunk + 1) * chunkSize >= file.size ? file.size : (currentChunk + 1) * chunkSize;
+                        formData.append("data", blobSlice.call(file, start, end));
+                        $.ajax({
+                            url: "/uploadFile",
+                            type: "POST",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function(code) {
+                                if (code == 'success'){
+                                    currentChunk ++;
+                                    if(currentChunk < chunks){
+                                        loadNext();
+                                    }
+                                    else
+                                        return;
+                                }
+                                else if(code == 'error'){
+                                    console.log("第 " + currentChunk + " 块上传失败，重新上传")
+                                    // loadNext();
+                                }
+                                else if(code == 'end'){
+                                    console.log("上传完成")
+                                    uploadFileInfo(md5);
+                                }else if(code == 'big'){
+                                    layer.msg('上传失败，文件大小超过上限！！');
+                                }
+                            }
+                        });
+                    };
+                    function loadNext() {
+                        // 当前块开始、结尾位置编号
+                        var start = currentChunk * chunkSize
+                        var end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+                        // 读取切割的文件块。blobSlice.call指定file和开始结束的片段，得到切割的文件。
+                        fileReader.readAsBinaryString(blobSlice.call(file, start, end));
+                        let percent = Math.floor(((currentChunk + 1) / chunks) * 100) + '%';
+                        console.log("upload: ", percent);
+                        element.progress('upload', percent)
+                        if(currentChunk % 4 == 0)
+                            $('#uploadPercent').text(percent);
+                        if(percent  == '100%'){
+                            $('#uploadPercent').text('上传完成');
+                            //关闭弹出层
+                            layer.close(progressLayer);
+                        }
+                    };
+                    loadNext();
+                }
+                /* 上传文件信息到服务器，生成用户信息*/
+                function uploadFileInfo(md5) {
+                    var fileName = document.getElementById('file').files[0].name;
+                    var userId = [[${loginUser.id}]];
+                    var parentId = [[${parentId}]];
+                    $.ajax({
+                        url: "/uploadFileInfo",
+                        type: "POST",
+                        data: {
+                            fileName: fileName,
+                            userId: userId,
+                            parentId: parentId,
+                            md5: md5
+                        },
+                        success: function(code) {
+                        // 服务器返回结果
+                            if (code == "success") {
+                                console.log("创建成功");
+                                window.location.reload();
+                            } else if (code == "repeat")
+                                layer.alert("文件已存在");
+                            else if (code == "space")
+                                layer.alert("空间不足")
+                        }
+                    });
+                }
+            });
+
+            // // 新建文件夹按钮触发
+            // function mkdir() {
+            //     layer.prompt({
+            //         formType: 0,
+            //         value: '',
+            //         title: '请输入新建文件夹名称',
+            //     }, function(newName, index) {
+            //         var parentId = [[${parentId}]];
+            //         var userId = [[${loginUser.id}]];
+            //         $.ajax({
+            //             url: "/makeDir",
+            //             type: "POST",
+            //             data: {
+            //                 dirName: newName,
+            //                 parentId: parentId,
+            //                 userId: userId
+            //             },
+            //             success: function(data) {
+            //                 if (data == "true") {
+            //                     window.location.reload();
+            //                     layer.msg(newName + '创建成功');
+            //                 } else
+            //                     layer.msg('文件夹已存在');
+            //             }
+            //         });
+            //     });
+            // }
+            //
+            // // 分享按钮触发
+            // function choiceShare(dirId) {
+            //     var dirIds = "";
+            //     if (dirId == "select") {
+            //         var namebox = $("input[name^='boxs']"); /*获取name值为boxs的所有input*/
+            //         for (i = 0; i < namebox.length; i++) {
+            //             if (namebox[i].checked == true) {
+            //                 console.log("dirId: " + namebox[i].id);
+            //                 dirIds += namebox[i].id + " ";
+            //             }
+            //         }
+            //     } else
+            //         dirIds = dirId;
+            //     if (dirIds == "")
+            //         layer.alert("请选择要分享的文件")
+            //     else {
+            //         layer.confirm('选择分享时效：', {
+            //             btn: ['一天', '一周', '一月', '永久', '取消'] /*按钮*/ ,
+            //             btn3: function(index, layero) {
+            //                 share(dirIds, "month")
+            //             },
+            //             btn4: function(index, layero) {
+            //                 share(dirIds, "forever")
+            //             }
+            //         }, function() {
+            //             share(dirIds, "day")
+            //         }, function() {
+            //             share(dirIds, "week")
+            //         });
+            //     }
+            // }
+            // // 发送要分享的数据
+            // function share(dirIds, choice) {
+            //     $.ajax({
+            //         url: "/shareDirs",
+            //         type: "POST",
+            //         data: {
+            //             dirIds: dirIds,
+            //             choice: choice
+            //         },
+            //         success: function(data) {
+            //             console.log(data)
+            //             var url = window.location.host + '/share/' + data.split(" ")[0];
+            //             var key = data.split(" ")[1];
+            //             var share_text = "链接地址:<br>" + url + "<br>口令（区分大小写）:" + key;
+            //             console.log(share_text)
+            //             layer.msg(share_text, {
+            //                 time: 60000,
+            //                 /*一分钟后自动关闭*/
+            //                 btn: ['确定', '取消']
+            //             }, function () {
+            //                 document.getElementById("share").value = "链接地址:" + url + " 口令（区分大小写）:" + key;
+            //                 var message = document.getElementById("share");
+            //                 message.select();
+            //                 document.execCommand("copy");
+            //                 layer.msg("已复制到剪贴板");
+            //             }, function () {
+            //                 document.getElementById("share").value = share_text;
+            //                 var message = document.getElementById("share");
+            //                 message.select();
+            //                 document.execCommand("copy");
+            //                 layer.msg("已复制到剪贴板");
+            //             });
+            //         }
+            //     });
+            // }
+            // // 打开分享链接
+            // function openShare(share_md5) {
+            //     window.open("/share/" + share_md5);
+            // }
+            // // 复制接收到的分享链接信息到剪贴板
+            // function copyShare(share_md5, key) {
+            //     var share_text = '链接地址:' + location.host + '/share/' + share_md5 + '口令（区分大小写）:' + key;
+            //     document.getElementById("share").value = share_text;
+            //     var message = document.getElementById("share");
+            //     message.select();
+            //     document.execCommand("copy");
+            //     layer.msg("已复制到剪贴板");
+            // }
+            //
+            // // 移动、复制、（分享链接内保存）按钮触发
+            // function copyOrMoveOrSaveDirs(type) {
+            //     var dirIds = "";
+            //     var namebox = $("input[name^='boxs']"); /*获取name值为boxs的所有input*/
+            //     for (i = 0; i < namebox.length; i++) {
+            //         if (namebox[i].checked == true) {
+            //             console.log("delete dirId: " + namebox[i].id);
+            //             dirIds += namebox[i].id + " ";
+            //         }
+            //     }
+            //     if (dirIds == "")
+            //         layer.alert("请选择文件！");
+            //     else {
+            //         var userId = [[${loginUser.Id}]];
+            //         var title = '';
+            //         if (type == 'copy')
+            //             title = "复制";
+            //         else if (type == 'move')
+            //             title = '移动'
+            //         layer.open({
+            //             type: 2,
+            //             content: '/copyOrMoveOrSaveDirList?type=' + type + "&dirIds=" + dirIds + "&userId=" +
+            //                 userId + "&dirId=" + userId,
+            //             area: ['600px', '500px'],
+            //             maxmin: true,
+            //             title: title,
+            //             end: function() {
+            //                 window.location.reload();
+            //             }
+            //         });
+            //     }
+            // }
+            //
+            // // 删除按钮触发
+            // function deleteDirs(dirId) {
+            //     var dirIds = "";
+            //     if (dirId == 'select') {
+            //         var namebox = $("input[name^='boxs']"); /*获取name值为boxs的所有input*/
+            //         for (i = 0; i < namebox.length; i++) {
+            //             if (namebox[i].checked == true) {
+            //                 console.log("delete dirId: " + namebox[i].id);
+            //                 dirIds += namebox[i].id + " ";
+            //             }
+            //         }
+            //     } else
+            //         dirIds = dirId;
+            //     var parentId = [[${parentId}]];
+            //     var userId = [[${loginUser.id}]];
+            //     console.log("dirIds: " + dirIds, "parentId: " + parentId, "userId: " + userId)
+            //     $.ajax({
+            //         url: "/deleteDirs",
+            //         type: "POST",
+            //         data: {
+            //             dirIds: dirIds,
+            //             userId: userId
+            //         },
+            //         success: function(data) {
+            //             console.log("删除成功");
+            //             window.location = "/dirList?dirId=" + parentId;
+            //         }
+            //     });
+            // };
+            //
+            // // 选择框
+            // /* 是否点击全选*/
+            // $('input[name="allboxs"]').click(function() {
+            //     if ($(this).is(':checked')) {
+            //         $('input[name="boxs"]').each(function() {
+            //             /*此处如果用attr，会出现第三次失效的情况*/
+            //             $(this).prop("checked", true);
+            //         });
+            //         var num = 0;
+            //         $('.jr').each(function() {
+            //             num += parseFloat($(this).text());
+            //         });
+            //         $('#J_Total').text(num);
+            //     } else {
+            //         $('input[name="boxs"]').each(function() {
+            //             $(this).prop("checked", false);
+            //         });
+            //         $('#J_Total').text('0.00');
+            //     }
+            // });
+            // /*判断当全选时 若有一个不选 全选按钮为不选状态*/
+            // $('input[name="boxs"]').click(function() {
+            //     var checkedLength = $("input[name='boxs']:checked").length;
+            //     var checkLength = $("input[name='boxs']").length;
+            //     var cont = 0;
+            //     $("input[name='boxs']:checked").each(function() {
+            //         cont += parseFloat($(this).parents('.td-chk').siblings('.td-sum').find('.jr').text());
+            //     });
+            //     $('#J_Total').text(cont);
+            //     if (checkLength == checkedLength) {
+            //         $("input[name='allboxs']").prop("checked", true);
+            //         return true;
+            //     } else {
+            //         $("input[name='allboxs']").prop("checked", false);
+            //         return true;
+            //     }
+            // });
+            //
+            // // 重命名按钮触发
+            // function rename(dirId, dirName) {
+            //     layer.prompt({
+            //         formType: 0,
+            //         value: dirName,
+            //         title: '请输入新文件夹名称',
+            //     }, function(newName, index) {
+            //         $.ajax({
+            //             url: "/rename",
+            //             type: "POST",
+            //             data: {
+            //                 dirId: dirId,
+            //                 newName: newName
+            //             },
+            //             success: function(data) {
+            //                 if (data == "success") {
+            //                     layer.msg(newName + '创建成功');
+            //                     window.location.reload();
+            //                 } else
+            //                     layer.msg('文件夹已存在');
+            //             }
+            //         });
+            //     });
+            // }
+            //
+            // // 下载按钮触发
+            // function downloadFile(dirId, dirName) {
+            //     layer.prompt({
+            //         formType: 0,
+            //         value: dirName,
+            //         title: '下载文件名称',
+            //     }, function(newName, index) {
+            //         $.ajax({
+            //             url: "/downloadFile",
+            //             type: "POST",
+            //             data: {
+            //                 dirId: dirId
+            //             },
+            //             success: function(data) {
+            //                 var url = '/' + data;
+            //                 $("#download").attr("href", url);
+            //                 $("#download").attr("download", newName);
+            //                 $("#download")[0].click();
+            //                 window.location.reload();
+            //             }
+            //         });
+            //     });
+            // }
+        </script>
+    </body>
+</html>

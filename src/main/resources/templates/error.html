@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>错误</title>
+        <link rel="stylesheet" href="/layui/css/layui.css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+    </head>
+    <body class="layui-layout-body">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header  layui-bg-black">
+                <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>
+                <!-- 头部区域（可配合layui已有的水平导航） -->
+            </div>
+            <div class="layui-body" style="left: 0px;text-align: center;top: 15%;">
+                <i class="layui-icon" style="font-size: 200px;">&#xe61c;</i>
+                <div id="page" style="border-style:dashed;border-color:#e4e4e4;width:700px;line-height:30px;margin: 0 auto;">
+                	<h1>抱歉，找不到此页面~</h1>
+                	<h2>Sorry, the site now can not be accessed. </h2>
+                	<font color="#666666">你请求访问的页面，暂时找不到，我们建议你返回上一级或首页进行操作，谢谢！</font><br><br>
+                     本页面将在<a id="sp" text="${x}">15</a>s后跳转到主页面。<a href="/index">立即跳转</a>
+                </div>
+            </div>
+            <div class="layui-footer" style="left: 0px;">
+                <!-- 底部固定区域 -->
+                © hadoop.pan.com - 网盘
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript" src="/layui/layui.js"></script>
+    <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+    <script>
+        layui.use(['layer', 'element', 'upload'], function() {
+            layer = layui.layer;
+        });
+        onload = function() {
+            setInterval(go, 1000);
+        };
+        var x = 15; //利用了全局变量来执行
+        function go() {
+            x--;
+            if (x > 0) {
+                document.getElementById("sp").innerHTML = x; //每次设置的x的值都不一样了。
+            } else {
+                location.href = '/index';
+            }
+        }
+    </script>
+</html>

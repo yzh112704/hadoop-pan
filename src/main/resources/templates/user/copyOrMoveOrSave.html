@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <meta charset="UTF-8">
+        <title th:if="${type=='move'}">移动</title>
+        <title th:if="${type=='copy'}">复制</title>
+        <title th:if="${type=='save'}">保存</title>
+        <link rel="stylesheet" href="/layui/css/layui.css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+    </head>
+    <body class="layui-layout-body">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header" style="left: 0px;background: whitesmoke">
+                <div class="layui-upload" style="padding: 10px 0px 0px 13px">
+                    <button type="button" class="layui-btn" th:onclick="save([[${dirIds}]], [[${userId}]], [[${parentId}]], [[${type}]])">
+                        <i class="layui-icon">&#xe67d;</i>保存
+                    </button>
+                    <button type="button" class="layui-btn" th:onclick="mkdir([[${parentId}]], [[${loginUser.id}]])"><i class="layui-icon">&#xe654;</i>新建文件夹
+                    </button>
+                    <button type="button" class="layui-btn" onclick="cancle()"><i class="layui-icon">&#x1007;</i>取消
+                    </button>
+                    <a th:if="${parentId!=loginUser.id&&parentId!=null&&path!='null'}" th:href="@{/returnCopyOrMoveOrSaveDirList(dirIds=${dirIds}, userId=${userId}, dirId=${parentId}, type=${type})}"
+                        style="padding: 0px 0px 0px 10px">
+                        <button type="button" class="layui-btn">
+                            <i class="layui-icon">&#xe65c;</i>返回
+                        </button>
+                    </a>
+                </div>
+            </div>
+            <div class="layui-body" style="left: 0px;top: 50px">
+                <table class="layui-table" lay-skin="line">
+                    <thead>
+                        <tr>
+                            <th lay-data="{field:'dirName'}" style="width: 500px">&ensp;
+                                文件名
+                            </th>
+                            <th lay-data="{field:'size'}" style="width: 50px">
+                                大小
+                            </th>
+                            <th lay-data="{field:'date'}" style="width: 100px">
+                                日期
+                            <th lay-data="{field:'function'}" style="width: 300px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="dir:${dirs}">
+                            <a th:if="${dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&ensp;
+                                    <img th:src="'/images/filetype/'+ ${dir.file_type} + '.ico'" style="height: 30px;"></img>&ensp;
+                                    <a th:href="@{/copyOrMoveOrSaveDirList(dirIds=${dirIds}, userId=${userId}, dirId=${dir.dir_id}, type=${type})}"
+                                        th:text="${dir.getDir_name()}"></a>
+                                </td>
+                                <td>---</td>
+                                <td><a th:text="${dir.date}"></a></td>
+                                <td>
+                                    <button class="layui-btn demo" th:onclick="rename([[${dir.dir_id}]], [[${dir.dir_name}]])"><i
+                                            class="layui-icon">&#xe642;</i></button>
+                                </td>
+                            </a>
+                            <a th:if="${!dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&ensp;
+                                    <img th:src="'/images/filetype/'+ ${dir.file_type} + '.ico'" style="height: 30px;"></img>&ensp;<a
+                                        th:text="${dir.getDir_name()}"></a></td>
+                                <td><a th:text="${dir.file_size}"></a></td>
+                                <td><a th:text="${dir.date}"></a></td>
+                                <td>
+                                    <button class="layui-btn demo" th:onclick="rename([[${dir.dir_id}]], [[${dir.dir_name}]])"><i
+                                            class="layui-icon">&#xe642;</i></button>
+                                </td>
+                            </a>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="layui-footer" style="left: 0px">
+                <!-- 底部固定区域 -->© hadoop.pan.com - 网盘</div>
+        </div>
+
+
+    </body>
+    <script type="text/javascript" src="/layui/layui.js"></script>
+    <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="/js/pan-user-function.js"></script>
+    <script>
+        layui.use(['layer', 'element', 'upload'], function() {
+            layer = layui.layer;
+        });
+    </script>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>登录</title>
+        <!-- For-Mobile-Apps-and-Meta-Tags -->
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="keywords" content="" />
+        <script type="application/x-javascript">
+            addEventListener("load", function() {
+                setTimeout(hideURLbar, 0);
+            }, false);
+
+            function hideURLbar() {
+                window.scrollTo(0, 1);
+            }
+        </script>
+        <!-- //For-Mobile-Apps-and-Meta-Tags -->
+
+        <link th:href="@{/css/index_style.css}" type="text/css" rel="stylesheet" media="all">
+        <link th:href="@{/css/jquerysctipttop.css}" rel="stylesheet" type="text/css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+    </head>
+
+    <body>
+        <h1>网盘系统</h1>
+        <section>
+            <div class="stage">
+                <div th:class="${left}">
+                    <h3>管理员登录</h3>
+                    <form th:action="@{/adminLogin}" method="post">
+                        <input type="text" class="adminid" name="adminid" placeholder="账号" required="" autocomplete="off">
+                        <input type="text" class="adminphone" name="adminphone" placeholder="手机号" required="" autocomplete="off">
+                        <input type="password" class="adminpassword" name="adminpassword" placeholder="密码" required="" autocomplete="off">
+                        <input type="submit" class="done" value="登录">
+                        <p name="adminLoginResult" th:text="${leftResult}"></p>
+                    </form>
+                </div>
+                <div th:class="${middle}">
+                    <h3>用户登录</h3>
+                    <form th:action="@{/userLogin}" method="post">
+                        <input type="text" name="id" class="id" th:value="${user!=null?user.id:''}" placeholder="学号"
+                            required="">
+                        <input type="password" name="pwd" class="password" placeholder="密码" required="">
+                        <input type="text" name="captcha" placeholder="验证码" required="" autocomplete="off">
+                        <img th:src="@{/kaptcha}" id="kaptcha" onclick="this.src=this.src+'?'+Math.random();" width="50"
+                            height="20" style="height: 28px;width: 75px;position:
+				 absolute;margin-top: 5px;right: 45px;" /><br>
+                        <input type="checkbox" id="remember-me" name="rememberMe" th:checked="${param.rememberme}">
+                        <label for="remember-me">记住我</label>
+                        <input type="submit" value="登录">
+                        <p name="userLoginResult" th:text="${middleResult}" style="color: red"></p>
+                        <ul class="bottom">
+                            <li><a th:href="@{/user/register}" class="forgot">注册</a></li>
+                            <li><a th:href="@{/user/forgot}" class="forgot">忘记密码</a></li>
+                        </ul>
+                    </form>
+                </div>
+                <div th:class="${right}">
+                    <h3>用户注册</h3>
+                    <form th:action="@{/userRegister}" method="post">
+                        <input type="text" class="name" name="id" th:value="${user!=null?user.id:''}" placeholder="学号"
+                            required="">
+                        <input type="text" class="name" name="name" th:value="${user!=null?user.name:''}" placeholder="姓名"
+                            required="">
+                        <input type="text" class="mail" name="mail" th:value="${user!=null?user.mail:''}" placeholder="邮箱"
+                            required="">
+                        <input type="password" class="password" name="pwd" placeholder="密码" required="">
+                        <input type="password" class="password" name="confirmPwd" placeholder="确认密码" required="">
+                        <input type="submit" value="注册">
+                        <p name="registerResult" th:text="${rightResult}"></p>
+                    </form>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+            <div class="footer">
+            </div>
+        </section>
+        <script th:src="@{/js/jquery-2.1.4.min.js}"></script>
+        <script th:src="@{/coverflow-slideshow.js}"></script>
+        <script type="text/javascript" src="/layui/layui.js"></script>
+        <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+    </body>
+    <script>
+        layui.use(['layer', 'element', 'upload'], function() {
+            layer = layui.layer;
+        });
+
+        function register() {
+            layer.open({
+                type: 2,
+                content: '/user/register',
+                area: ['400px', '550px'],
+                maxmin: true,
+                title: '注册信息',
+                end: function() {
+                    window.location.reload();
+                }
+            });
+        };
+    </script>
+</html>

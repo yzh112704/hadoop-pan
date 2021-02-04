@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>文件分享</title>
+        <link rel="stylesheet" href="/layui/css/layui.css">
+        <link rel="icon" type="image/png" href="/images/icon.png"/>
+    </head>
+    <body class="layui-layout-body">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header  layui-bg-black">
+                <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>                <ul class="layui-nav layui-layout-left">
+                    <li class="layui-nav-item">
+                        <a th:text="${shareUserId!=null?shareUserId + '分享的文件':''}"></a>
+                    </li>
+                </ul>
+                <ul th:if="${loginUser!=null}" class="layui-nav layui-layout-right">
+                    <li class="layui-nav-item" style="right: 30px">
+                        <a th:text="${loginUser.name}">
+                            <span class="layui-nav-more"></span></a>
+                        <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                            <dd><a onclick="editInfo()">修改基本资料</a></dd>
+                            <dd><a onclick="changePwd()">修改密码</a></dd>
+                            <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+                <!-- 头部区域（可配合layui已有的水平导航） -->
+            </div>
+            <div class="layui-body" style="left: 0px">
+                <div class="layui-upload" th:if="${fileType!='share'}" style="padding: 10px 0px 0px 13px"><input hidden="hidden"
+                        id="file" type="file">
+                    <button th:if="${loginUser!=null}" type="button" class="layui-btn" th:onclick="openSave('save', '', [[${loginUser.id}]])">
+                        <i class="layui-icon">&#xe67d;</i>保存
+                    </button>
+                    <a th:if="${dirIds!=''}" th:href="@{|/share/returnScan/${share_md5}?dirIds=${dirIds}&parentId=${parentId}}"
+                        style="padding: 0px 0px 0px 10px">
+                        <button type="button" class="layui-btn">
+                            <i class="layui-icon">&#xe65c;</i>返回
+                        </button>
+                    </a>
+                </div>
+                <a id="download" download="" href=""></a>
+                <table class="layui-table" lay-skin="line">
+                    <thead>
+                        <tr>
+                            <div th:if="${fileType!='share'}">
+                                <th lay-data="{field:'dirName'}" style="width: 500px"><input id="allboxs" name="allboxs"
+                                        type="checkbox">&ensp;<a th:href="@{/fileList(fileType=${fileType}, type='name', upOrDown=${upOrDown!=null?upOrDown:'up'})}">文件名</a><a
+                                        th:if="${type=='name'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a></th>
+                                <th lay-data="{field:'size'}" style="width: 50px"><a th:href="@{/fileList(fileType=${fileType}, type='size', upOrDown=${upOrDown!=null?upOrDown:'up'})}">大小</a><a
+                                        th:if="${type=='size'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a></th>
+                                <th lay-data="{field:'date'}" style="width: 100px"><a th:href="@{/fileList(fileType=${fileType}, type='date', upOrDown=${upOrDown!=null?upOrDown:'up'})}">日期</a><a
+                                        th:if="${type=='date'}" th:text="${upOrDown=='up'?'↑':'↓'}"></a></th>
+                                <th lay-data="{field:'function'}" style="width: 300px"></th>
+                            </div>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="dir:${dirs}">
+                            <a th:if="${dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><input
+                                        type="checkbox" name="boxs" th:id="${dir.dir_id}">&ensp;
+                                    <img th:src="'/images/filetype/'+ ${dir.file_type} + '.ico'" style="height: 30px;"></img>&ensp;
+                                    <a th:href="@{|/share/scan/${share_md5}?dirIds=${dir.sub_ids}&parentId=${dir.dir_id}|}"
+                                        th:text="${dir.getDir_name()}"></a>
+                                </td>
+                                <td>---</td>
+                                <td><a th:text="${dir.date}"></a></td>
+                                <td>
+                                    <button th:if="${loginUser!=null}" class="layui-btn demo" th:onclick="openSave('select', [[${dir.dir_id}]], [[${loginUser.id}]])">
+                                        <i class="layui-icon">&#xe67d;</i></button>
+                                </td>
+                            </a>
+                            <a th:if="${!dir.isDir}">
+                                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><input
+                                        type="checkbox" name="boxs" th:id="${dir.dir_id}">&ensp;<img th:src="'/images/filetype/'+ ${dir.file_type} + '.ico'"
+                                        style="height: 30px;"></img>&ensp;<a th:text="${dir.getDir_name()}"></a></td>
+                                <td><a th:text="${dir.file_size}"></a></td>
+                                <td><a th:text="${dir.date}"></a></td>
+                                <td>
+                                    <button th:if="${loginUser!=null}" class="layui-btn demo" th:onclick="openSave('select', [[${dir.dir_id}]], [[${loginUser.id}]])">
+                                        <i class="layui-icon">&#xe67d;</i>
+                                    </button>
+                                    <button class="layui-btn demo" th:onclick="downloadFile([[${dir.dir_id}]], [[${dir.getDir_name()}]])">
+                                        <i class="layui-icon">&#xe601;</i>
+                                    </button>
+                                </td>
+                            </a>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="layui-footer" style="left: 0px">
+                <!-- 底部固定区域 -->© hadoop.pan.com - 网盘</div>
+        </div>
+        </div>
+    </body>
+    <script type="text/javascript" src="/layui/layui.js"></script>
+    <script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="/js/pan-user-function.js"></script>
+    <script>
+        layui.use(['layer', 'element', 'upload'], function() {
+            layer = layui.layer;
+        });
+    </script>
+</html>

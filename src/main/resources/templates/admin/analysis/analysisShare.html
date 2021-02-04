@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header  layui-bg-black">
+        <div class="layui-logo"><img src="/images/logo.png" style="width: 100%"></img></div>        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" style="right: 30px">
+                <a th:text="${admin.id}">
+                    <span class="layui-nav-more"></span>
+                </a>
+                <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a th:onclick="openEdit('admin', [[${admin.id}]])">修改基本资料</a></dd>
+                    <dd><a th:href="@{/userLogout}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+    </div>
+    <div class="layui-side layui-blay-reqText layui-bg-black">
+        <ul class="layui-nav layui-bg-cyan layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe63c;</i>&ensp;列表</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/allList(type=user)}"><i class="layui-icon">&#xe770;</i>&ensp;用户列表</a></dd>
+                    <dd><a th:if="${admin.level!='common'}" th:href="@{/allList(type=admin)}"><i class="layui-icon">&#xe612;</i>&ensp;管理员列表</a></dd>
+                    <dd><a th:href="@{/allList(type=file)}"><i class="layui-icon">&#xe60a;</i>&ensp;文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=banFile)}"><i class="layui-icon">&#xe64f;</i>&ensp;被禁用文件列表</a></dd>
+                    <dd><a th:href="@{/allList(type=share)}"><i class="layui-icon">&#xe609;</i>&ensp;分享链接列表</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item  layui-nav-itemed">
+                <a class="" href="javascript:;"><i class="layui-icon">&#xe629;</i>&ensp;数据分析</a>
+                <dl class="layui-nav-child">
+                    <dd><a th:href="@{/analysis(type='day')}"><i class="layui-icon">&#xe62c;</i>&ensp;日常分析</a></dd>
+                    <dd><a th:href="@{/analysis(type='top',top='3')}"><i class="layui-icon">&#xe604;</i>&ensp;排行榜</a></dd>
+                    <dd><a th:href="@{/analysis(type='share',top='3')}"><i class="layui-icon">&#xe64c;</i>&ensp;分享链接分析</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <a id="download" download="" href=""></a>
+    <input id="share" style="margin: 0px; width: 0.1px; height: 0.1px;filter:alpha(Opacity=0); opacity: 0;">
+    <div class="layui-body" style="overflow: auto;">
+        <div id="analysis" style="margin: 0;height: 390px;width: 100%;">
+            <div class="layui-inline" style="position:absolute;z-index: 1;left: 3%;top: 3%;">
+                日期范围：
+                <a id="date" th:text="${startDate + ' ~ ' + endDate}"></a>
+            </div>
+            <div id="test2" class="layui-inline" style="position:absolute;z-index: 1;right: 5%;top: 3%;border: ridge">
+                时间范围选择
+                <input type="text" style="display: none" class="layui-input" id="test1">
+            </div>
+            <div  class="layui-inline" style="position:absolute;z-index: 1;right: 15%;top: 3%;">
+                排名选择
+                <select id="topSelect" style="border: ridge">
+                    <option value="3" th:selected="${top=='3'}">TOP3</option>
+                    <option value="4" th:selected="${top=='4'}">TOP4</option>
+                    <option value="5" th:selected="${top=='5'}">TOP5</option>
+                    <option value="6" th:selected="${top=='6'}">TOP6</option>
+                    <option value="7" th:selected="${top=='7'}">TOP7</option>
+                    <option value="8" th:selected="${top=='8'}">TOP8</option>
+                    <option value="9" th:selected="${top=='9'}">TOP9</option>
+                    <option value="10"th:selected="${top=='10'}">TOP10</option>
+                </select>
+            </div>
+            <div id="main" style="height: 100%;width: 100%"></div>
+        </div>
+        <table class="layui-table" lay-skin="line" style="margin: 0;min-width: 1063px;max-width: 100%;">
+            <thead>
+            <tr>
+                <div th:if="${shareList!=null}">
+                    <th lay-data="{field:'url'}">&emsp;分享链接</a></th>
+                    <th lay-data="{field:'userId'}">分享用户ID</th>
+                    <th lay-data="{field:'pwd'}">&emsp;次数</th>
+                </div>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${shareList!=null}" th:each="line:${shareList}">
+                <td style="max-width:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    <a th:onclick="openShare([[${line.split(':')[0]}]])" th:text="${line.split(':')[0]}"></a>
+                </td>
+                <td>
+                    <a th:onclick="openInfo([[${line.split(':')[1]}]])" th:text="${line.split(':')[1]}"></a>
+                </td>
+                <td><i class="layui-icon">&#xe756;</i>&ensp;访问量：<a th:text="${line.split(':')[2]}"></a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="layui-footer">
+        © hadoop.pan.com - 网盘
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+</body>
+<!--    <script type="text/javascript" src="/js/spark-md5.js"></script>-->
+<script type="text/javascript" src="/layui/layui.js"></script>
+<script type="text/javascript" src="/layui/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/js/pan-admin-function.js"></script>
+<script type="text/javascript" src="/echarts/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/echarts/dist/echarts.min.js"></script>
+<script>
+    $("#topSelect").change(function(){
+        let startDate = document.getElementById("date").innerText.split("~")[0].trim();
+        let endDate = document.getElementById("date").innerText.split("~")[1].trim();
+        let selectTop = $("#topSelect").val();
+        window.location.href="/analysis?type=share&startDate=" + startDate + "&endDate=" + endDate + "&top=" + selectTop;
+    });
+    layui.use(['layer', 'element', 'upload', 'laydate'], function() {
+        layer = layui.layer;
+        element = layui.element;
+        laydate = layui.laydate;
+        //双控件
+        laydate.render({
+            elem: '#test1',
+            eventElem: '#test2',
+            type: 'date',
+            trigger: 'click',
+            range: '~',
+            min: '2020-11-28',
+            max: 0,
+            done: function(value) {
+                let startDate = value.split("~")[0].replace(' ','');
+                let endDate = value.split("~")[1].replace(' ','');
+                let selectTop = $("#topSelect").val();
+                window.open("/analysis?type=share&startDate=" + startDate + "&endDate=" + endDate + "&top=" + top )
+            }
+        });
+    });
+
+
+    var analysisShare = echarts.init(document.getElementById("main"));
+    analysisShare.setOption({
+        title: {
+            text: '分享链接热度',
+            x: 'center',
+            top: '3%',
+        },
+        aria: {
+            show: true,
+        },
+        tooltip : {
+            trigger: 'item',
+            formatter: p => {
+                console.log(p);
+                return '链接：' + p.data['name'] + '<br>' + '分享者：' + p.data['id'] + '<br>' + p.seriesName +'次数：' + p.data['value'];
+            }
+        },
+        calculable : true,
+        series: [{
+            name: '访问',
+            type: 'pie',
+            radius: '50%',
+            center: ['50%', '50%'],
+            radius: ["40%", "70%"],
+            label: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        fontSize: '15px',
+                    },
+                    formatter: '{b}\n{d}%'
+                },
+            },
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)',
+                }
+            }
+        }]
+    });
+    let startDate = document.getElementById("date").innerText.split("~")[0].trim();
+    let endDate = document.getElementById("date").innerText.split("~")[1].trim();
+    let selectTop = $("#topSelect").val();
+    $.ajax({
+        method: 'post',
+        data:{
+            startDate: startDate,
+            endDate: endDate,
+            top: selectTop
+        },
+        url: '/analysisShareTop',
+        success: function (shareDatas) {
+            var shareData = [];
+            for(let i=0; i<shareDatas.length; i++){
+                shareData[i] = {value: shareDatas[i][0], id: shareDatas[i][1], name: shareDatas[i][2]};
+            }
+            analysisShare.setOption({
+                series: [{data: shareData}]
+            });
+        }
+    })
+
+    // 打开分享链接
+    function openShare(share_md5) {
+        window.open("/share/" + share_md5);
+    }
+
+    function openInfo(id) {
+        layer.open({
+            type: 2,
+            content: '/showInfo?type=user&id=' + id,
+            area: ['400px', '550px'],
+            maxmin: true,
+            title: '用户详细信息',
+        });
+    }
+</script>
+</html>
