@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>后台管理</title>
     <link rel="stylesheet" href="/layui/css/layui.css">
-    <link rel="icon" type="image/png" href="/images/icon.png"/>
+    <link rel="icon" type="image/png" href="/images/icon.ico"/>
 </head>
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
@@ -124,13 +124,13 @@
             type: 'date',
             trigger: 'click',
             range: '~',
-            min: '2020-11-28',
+            min: '2021-1-1',
             max: 0,
             done: function(value) {
                 let startDate = value.split("~")[0].replace(' ','');
                 let endDate = value.split("~")[1].replace(' ','');
                 let selectTop = $("#topSelect").val();
-                window.open("/analysis?type=share&startDate=" + startDate + "&endDate=" + endDate + "&top=" + top )
+                window.open("/analysis?type=share&startDate=" + startDate + "&endDate=" + endDate + "&top=" + selectTop )
             }
         });
     });

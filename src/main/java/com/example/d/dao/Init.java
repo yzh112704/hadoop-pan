@@ -82,23 +82,23 @@ public class Init{
     public void checkSuperAdmin(){
         com.example.d.entity.Admin admin = adminDao.getAdminInfoById("administrator");
         if(admin == null){
-            System.out.println("****************************************************");
-            System.out.println("*  Super admin 'administrator' is not found!\t   *");
-            System.out.println("*  Create super admin\t\t\t\t   *");
-            System.out.println("*  name:     administrator\t\t\t   *");
-            System.out.println("*  phone:    12345678901\t\t\t   *");
-            System.out.println("*  passowrd: 123456\t\t\t\t   *");
-            System.out.println("*  Please change the super admin's password and    *");
-            System.out.println("*  \tphone as soon as possible!!\t\t   *");
-            System.out.println("****************************************************\n");
-            
+            System.out.println("*****************************************************");
+            System.out.println("*  Super admin 'administrator' is not found!\t\t*");
+            System.out.println("*  Create super admin\t\t\t\t\t\t\t\t*");
+            System.out.println("*  name:     administrator\t\t\t\t\t\t\t*");
+            System.out.println("*  phone:    12345678901\t\t\t\t\t\t\t*");
+            System.out.println("*  password: 123456\t\t\t\t\t\t\t\t\t*");
+            System.out.println("*  Please change the super admin's password and\t\t*");
+            System.out.println("*  \tphone as soon as possible!!\t\t\t\t\t\t*");
+            System.out.println("*****************************************************\n");
+
             System.out.println("*****************************************");
-            System.out.println("*  没有找到超级管理员！！\t\t*");
-            System.out.println("*  创建超级管理员\t\t\t*");
-            System.out.println("*  名字: administrator\t\t\t*");
-            System.out.println("*  电话: 12345678901\t\t\t*");
-            System.out.println("*  密码: 123456\t\t\t\t*");
-            System.out.println("*  请尽快修改超级管理员的密码和电话！！ *");
+            System.out.println("*  没有找到超级管理员！！\t\t\t\t\t*");
+            System.out.println("*  创建超级管理员\t\t\t\t\t\t\t*");
+            System.out.println("*  名字: administrator\t\t\t\t\t*");
+            System.out.println("*  电话: 12345678901\t\t\t\t\t\t*");
+            System.out.println("*  密码: 123456\t\t\t\t\t\t\t*");
+            System.out.println("*  请尽快修改超级管理员的密码和电话！！\t\t\t*");
             System.out.println("*****************************************");
             admin = new com.example.d.entity.Admin();
             admin.setId("administrator");
@@ -115,7 +115,7 @@ public class Init{
             analysis = new Analysis();
             analysis.setRowKey("createDate");
             analysis.setCount(DateUtil.longToString("yyyy-MM-dd", System.currentTimeMillis()));
-            analysisDao.addAnalysisStartDate(analysis);
+            analysisDao.addAnalysisStartDate(analysis, System.currentTimeMillis());
             System.out.println("Run start date: " + analysis.getCount());
         }
     }

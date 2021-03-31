@@ -33,11 +33,12 @@ public class AnalysisDao {
     /**
      * 向analysis表添加起始日期
      * @param analysis
+     * @param timestamp
      */
-    public void addAnalysisStartDate(Analysis analysis){
+    public void addAnalysisStartDate(Analysis analysis, Long timestamp){
         String rowKey = analysis.getRowKey();
         String count = analysis.getCount();
-        hbaseDao.updateOneData(Constants.TABLE_ANALYSIS, rowKey, Constants.FAMILY_ANALYSIS_INFO, Constants.COLUMN_ANALYSIS_INFO, count);
+        hbaseDao.updateOneDataWithTimeStamp(Constants.TABLE_ANALYSIS, rowKey, Constants.FAMILY_ANALYSIS_INFO, Constants.COLUMN_ANALYSIS_INFO, count, timestamp);
     }
 
     /**
@@ -116,5 +117,15 @@ public class AnalysisDao {
             }
         }
         return list;
+    }
+
+    /**
+     * 向analysis表添加分析数据
+     * @param analysis
+     */
+    public void addRandomAnalysis(Analysis analysis, Long time){
+        String rowKey = analysis.getRowKey();
+        String count = String.valueOf(Integer.valueOf(analysis.getCount()) + 1);
+        hbaseDao.updateOneDataWithTimeStamp(Constants.TABLE_ANALYSIS, rowKey, Constants.FAMILY_ANALYSIS_INFO, Constants.COLUMN_ANALYSIS_INFO, count, time);
     }
 }

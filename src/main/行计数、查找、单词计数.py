@@ -3,7 +3,7 @@ import re
 suffix = '.java'  #指定后缀名
 
 def main():
-    #findRegex('cancle')
+    #findRegex('userId')
     lineCount()
 def lineCount():
     path = os.getcwd()

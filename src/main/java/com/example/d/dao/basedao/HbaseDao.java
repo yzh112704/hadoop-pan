@@ -86,6 +86,29 @@ public class HbaseDao {
     }
 
     /**
+     * 插入或修改一条数据，针对列族中有一个列，value为String类型
+     * @category put 'tableName','rowKey','familyName:columnName',t='timestamp'
+     * @param tableName         表名
+     * @param rowKey            行键
+     * @param family            列簇名
+     * @param column            列名
+     * @param value             列值
+     * @param timestamp              时间戳
+     * @throws IOException
+     */
+    public void updateOneDataWithTimeStamp(String tableName, String rowKey, String family, String column, String value, Long timestamp) {
+        try {
+            Table table = HbaseConn.getConn().getTable(TableName.valueOf(tableName));
+            Put put = new Put(Bytes.toBytes(rowKey), timestamp);
+            put.addColumn(Bytes.toBytes(family), Bytes.toBytes(column), Bytes.toBytes(value));
+            table.put(put);
+            table.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * 计算行数，得到唯一的id值
      * @param tableName         表名
      * @return long
