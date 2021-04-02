@@ -19,9 +19,9 @@ function changePwd(){
         maxmin: true,
         title: '修改密码',
         end: function() {
-            layer.alert('修改成功',{title: '信息' },function(){
-                location.reload();
-            });
+            // layer.alert('修改成功',{title: '信息' },function(){
+            //     location.reload();
+            // });
         }
     });
 };

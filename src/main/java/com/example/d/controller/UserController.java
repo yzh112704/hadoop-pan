@@ -230,7 +230,7 @@ public class UserController {
             ,@RequestParam(value="old", defaultValue="") String old
             , String pwd
             , String confirmPwd) {
-        if(!old.equals("")) {
+        if(old.equals("")) {
             model.addAttribute("changePwdResult", "旧密码没有填写");
             return "user/editPwd";
         }
