@@ -115,7 +115,6 @@ public class Init{
             analysis = new Analysis();
             analysis.setRowKey("createDate");
             analysis.setCount(DateUtil.longToString("yyyy-MM-dd", System.currentTimeMillis()));
-            analysisDao.addAnalysisStartDate(analysis, System.currentTimeMillis());
             System.out.println("Run start date: " + analysis.getCount());
         }
     }

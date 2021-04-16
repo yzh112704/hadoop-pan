@@ -128,4 +128,10 @@ public class AnalysisDao {
         String count = String.valueOf(Integer.valueOf(analysis.getCount()) + 1);
         hbaseDao.updateOneDataWithTimeStamp(Constants.TABLE_ANALYSIS, rowKey, Constants.FAMILY_ANALYSIS_INFO, Constants.COLUMN_ANALYSIS_INFO, count, time);
     }
+
+    /**
+     * 根据行键删除一条数据（用于删除起始日期）
+     * @param id
+     */
+    public void delAnalysisInfoById(String id){ hbaseDao.deleteDataByRow(Constants.TABLE_ANALYSIS, id); }
 }

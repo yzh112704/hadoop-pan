@@ -111,7 +111,7 @@ public class AnalysisTest {
         Analysis analysis = new Analysis();
         analysis.setRowKey("createDate");
         analysis.setCount("2021-01-01");
-        analysisDao.addAnalysisStartDate(analysis, DateUtil.StringToLong(analysis.getCount()) + 1);
+        analysisDao.addAnalysisStartDate(analysis, System.currentTimeMillis());
     }
 
     @Test
