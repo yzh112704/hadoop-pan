@@ -1,0 +1,310 @@
+需求
+Countorller
+Service
+Dao
+
+邮箱授权码
+kwmqoojhclyqhcgi
+
+hbase建表语句
+create 'user','user_info','user_file','user_dir','user_share','user_space'
+create 'mail','mail_info'
+create 'mail_user','mail_user_info'	
+create 'file','file_info'
+create 'file_MD5','MD5_info'
+create 'dir','dir_info','dir_file'
+create 'ticket','ticket_info'
+create 'share','share_info'
+create 'analysis','analysis_info'
+create 'Admin','info'
+
+
+删表重建语句
+disable 'user'
+drop 'user'
+create 'user','user_info','user_file','user_dir','user_share','user_space'
+
+disable 'mail'
+drop 'mail'
+create 'mail','mail_info'
+
+disable 'mail_user'
+drop 'mail_user'
+create 'mail_user','mail_user_info'	
+
+disable 'file'
+drop 'file'
+create 'file','file_info'
+
+disable 'file_MD5'
+drop 'file_MD5'
+create 'file_MD5','MD5_info'
+
+disable 'dir'
+drop 'dir'
+create 'dir','dir_info','dir_file'
+
+disable 'ticket'
+drop 'ticket'
+create 'ticket','ticket_info'
+
+disable 'share'
+drop 'share'
+create 'share','share_info'
+
+disable 'analysis'
+drop 'analysis'
+create 'analysis','analysis_info'
+
+disable 'Admin'
+drop 'Admin'
+create 'Admin','info'
+
+
+删除
+
+disable 'user'
+drop 'user'
+disable 'mail'
+drop 'mail'
+disable 'mail_user'
+drop 'mail_user'
+disable 'file'
+drop 'file'
+disable 'file_MD5'
+drop 'file_MD5'
+disable 'dir'
+drop 'dir'
+disable 'ticket'
+drop 'ticket'
+disable 'share'
+drop 'share'
+disable 'analysis'
+drop 'analysis'
+disable 'Admin'
+drop 'Admin'
+
+删除列
+delete 表名，行键，列簇：列名
+delete 'user','12','user_file:12'
+
+删除行
+deleteall 表名，行键
+deleteall 'dir','2'
+deleteall 'user','17031110139'
+
+
+rowkey
+	用户ID、文件ID、MD5
+
+
+
+User	create 'user','user_info','user_file','user_dir','user_share','user_space'
+	rowkey	学号id
+	User_info
+		用户信息
+			密码pwd、姓名name、性别sex、学院institue、年级grade、专业major、日期date、电话phone、地址address、邮箱email、状态status
+		
+		用户注册	User:User_info
+			输入信息		
+		用户更改信息	User:User_info
+			查看用户信息
+	
+	User_File
+		文件file_id
+			详细ID（1  2  3）	value为个数
+	
+	User_Dir
+		文件夹dir_id
+			详细ID（1  2  3）
+			
+	User_Share
+		分享share_md5
+			key:share_md5 value:口令
+	
+	User_Space
+		用户空间信息space
+			已用空间	use_space	User:User_File.file_id -> File_MD5:column.size
+				根据User_File中文件ID及File_MD5中文件size计算用户已用空间大小
+			剩余空间	surplus_space	User:User_Space.use_space
+				计算用户剩余空间大小
+			总空间		total_space
+				信息完整2GB空间，不完整500MB空间
+
+Mail 	create 'mail','mail_info'	
+	rowkey	md5(邮箱 + 当前时间)
+	mail_info
+		邮件信息：用户Id、操作action(注册register、忘记密码forget)、超时时间expired、状态content(0：未使用过；1：已经使用过)
+		
+	通过用户访问发送到邮箱中的链接 /action/md5
+		识别之后进行相应的操作
+		
+Mail_User	create 'mail_user','mail_user_info'	
+	rowkey	邮箱地址mail
+	mail_info
+		用户ID
+		
+	激活之后，邮箱与用户进行绑定（一个邮箱只能绑定一个账号）
+	
+File	create 'file','file_info'
+	rowkey MD5值
+	File_info
+	文件信息
+		file_id、文件名称file_name、类型file_type、大小size、当前块数current、总块数total、上传日期date
+		
+	上传文件
+		判断surplus_space是否大于文件大小
+			负数	提醒空间不足
+			正数	可以上传
+		客户端首先计算文件MD5值	
+		判断MD5值是否已经存在		File.rowkey
+			不存在
+				上传到HDFS中，记录文件信息到文件表file
+			存在  
+				实现秒传
+		上传文件信息到用户表user.user_file和文件夹表dir
+		
+	下载文件
+		根据文件夹信息查找到文件ID在File_MD5表中查找MD5值
+		再在file表中查找文件真实存储路径，提供下载链接
+
+
+File_MD5	create 'file_MD5','MD5_info'
+	rowkey	文件file_id
+	MD5_info	MD5值、size文件大小
+
+Dir		create 'dir','dir_info','dir_file'
+	rowkey dir_id
+	dir_info
+	用户文件夹信息
+		文件夹名称dir_name、父文件夹ID parent_id、子文件夹ID sub_id、路径path、是否为文件夹isdir
+	
+	dir_file
+	文件信息
+		文件id、上传日期date、大小size
+		
+	文件夹操作
+		先判断isdir，是否为文件夹（上传的文件、复制的文件，isdir为false）
+		是文件夹
+			查看文件夹内容 sub_id查找显示子文件夹
+			创建文件夹
+			重命名
+			移动、删除
+			分享
+		是文件
+			重命名
+			删除
+			下载
+			分享
+
+Ticket 	create 'ticket','ticket_info'
+	rowkey ticket值（cookie，随机生成）
+	
+	ticket_info 
+		userId、status、expired
+	
+		用户登录cookie认证信息
+			用户ID、状态status、过期时间expired
+		用户登录后生成ticket信息，验证登录用户
+		
+		rowkey sharrTicket值（cookie，随机生成）MD5(key + System.currentTimeMillis())
+		分析链接cookie认证信息
+			分享链接share_md5、过期时间expired(12小时)
+		用户输入口令后生成shareTicket信息，验证是否输入过口令（12小时过期）
+	
+
+Share 	create 'share','share_info'
+	rowkey md5加密后的信息（文件夹ID + 口令）
+	share_info
+		user_id分享用户、dir_ids被分享的文件夹、key口令、expired有效时间、status状态（是否有效，管理员可更改为无效分享链接）
+	根据链接提供的rowkey，先判断链接expired是否已经失效，查找对应的文件夹ID和口令，输入口令，符合后可查看是哪个用户分享的文件及文件内容（名字、大小、创建日期）。
+
+Analysis	create 'analysis','analysis_info'
+	程序初始化日期		rowkey：createDate
+		analysis_info：count
+			yyyy-MM-dd格式，记录程序运行的起始日期，用于确定显示数据分析的起始日期
+
+	rowkey 操作类型+操作方式+date
+	analysis_info
+		count 计数
+	
+	操作类型：用户user、文件file、分享share
+	操作方式：上传upload、下载download、分享share
+		//rowkey 以test开头
+		Filter filter=new PrefixFilter(Bytes.toBytes("test"));
+	
+	用户操作记录	user_ + 
+		上传 user_upload_ 
+			用户ID	user_upload_userId + date			PrefixFilter(Bytes.toBytes("user_upload_"))
+				用户每上传一次文件，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析用户上传过多少次文件
+				
+		下载 user_download_ + date
+			用户ID	user_download_userId + date			PrefixFilter(Bytes.toBytes("user_download_"))
+				用户每下载一次文件，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析用户下载过多少次文件
+		
+		分析 user_share_ + date
+			用户ID	user_download_userId + date			PrefixFilter(Bytes.toBytes("user_share_"))
+				用户每分享一次，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析用户分享过多少次文件
+		分析得出用户上传次数、下载次数、分享次数排行榜
+				
+	文件操作记录	file_ + 
+		上传 file_upload_ + date
+			文件ID	file_upload_fileId + date			PrefixFilter(Bytes.toBytes("file_upload_"))
+				文件每被上传一次，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析该文件被上传过多少次
+				
+		下载 file_download_ + date
+			文件ID	file_download_fileId + date			PrefixFilter(Bytes.toBytes("file_download_))
+				文件每被下载一次，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析该文件被下载过多少次
+		分析得出文件被上传次数、被下载次数排行榜
+		
+	分享操作记录	share_open_ + date
+		分享链接share_md5	share_open_Md5 + date		PrefixFilter(Bytes.toBytes("share_open_))
+			该分享链接被人输入口令打开，如果该条记录已存在，计数count+1；不存在，创建该条信息。
+				用于分析该分享链接被人正确打开过多少次
+		分析得出那个分享链接知名度排行
+
+Admin	create 'Admin','info'
+	rowkey 管理员ID
+	管理员信息
+		密码pwd，手机号phone，级别level
+		级别level：
+			超级管理员admin:所有操作，可新建、删除level为operate、common的管理员用户，level为operate、common
+			操作管理员operate:所有操作，仅可创建、删除common级别的管理员
+			普通管理员common:只可查看信息
+			
+	登录管理员
+	
+	查看所有用户信息
+		操作用户
+			删除用户、更改用户信息（改密码、总空间大小）
+			(*批量生产用户信息，导入excel表格)
+	查看所有文件信息
+		操作文件
+			禁用文件（替换为对应格式的文件）
+	查看所有分享信息
+		操作分享
+			使分享链接失效
+	查看分析结果
+		用户上传、下载、分享次数
+		文件被上传、下载次数
+		分享链接被打开次数
+		
+	
+	
+	
+"file_download_", "file_upload_", "share_", "user_download_", "user_share_", "user_upload_",
+
+
+
+
+
+
+
+
+
+

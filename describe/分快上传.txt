@@ -1,0 +1,110 @@
+分析文件（0%~100%）：	浏览器计算md5值
+	计算得到文件md5值后上传到服务器判断是否需要上传文件
+		文件已存在，不需要上传（提示秒传）
+			数据库生成文件夹信息
+		文件不存在：
+			分块上传（0%~100%） 2MB一块
+				
+前端上传：
+	初始化：
+		//file的slice方法（浏览器是否支持切块）
+		var blobSlice = File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice;
+		// 获取文件数据
+		var file = document.getElementById("file").files[0];
+		// 读取时分块大小2MB
+		var chunkSize = 2097152;
+		// 计算总块数
+		var chunks = Math.ceil(file.size / chunkSize);
+		// 当前块数
+		var currentChunk = 0;
+		
+	fileReader内容变化监听：
+		// fileReader变化时执行
+		fileReader.onload = function(e) {
+			var formData = new FormData();
+			// 文件md5
+			formData.append("md5", md5)
+			// 上传的当前块编号
+			formData.append("currentChunk", currentChunk);
+			// 上传的总块数
+			formData.append("totalChunks", chunks);
+			// 块数据内容
+			formData.append("data", e.target.result);
+			$.ajax({
+				url: "/uploadFile",
+				type: "POST",
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function(code) {
+					if (code == 'success'){
+						currentChunk ++;
+						loadNext();
+					}
+					else{
+						console.log("第 " + currentChunk + " 块上传失败，重新上传")
+						loadNext();
+					}
+				}
+			});
+		};
+	
+	读取下一块数据
+        function loadNext() {
+			// 当前块开始、结尾位置编号
+			var start = currentChunk * chunkSize
+			var end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+			// 读取切割的文件块。blobSlice.call指定file和开始结束的片段，得到切割的文件。
+			fileReader.readAsBinaryString(blobSlice.call(file, start, end));
+		};
+		
+		
+后端接收：
+	@RequestMapping(path = "/uploadFile", method = RequestMethod.POST)
+    @ResponseBody
+    public String uploadFile(@RequestParam("md5") String md5
+			, @RequestParam("currentChunk") String currentChunk
+            , @RequestParam("totalChunks") String totalChunks
+			, @RequestParam("data") MultipartFile data) throws IOException {
+        return fileService.uploadFile(new ByteArrayInputStream(data.getBytes()), md5, currentChunk, totalChunks);
+    }
+	
+	 public void put(InputStream inputStream, String md5) {
+        try {
+            OutputStream outputStream = HdfsConn.getFileSystem().append(new Path(basePath + "file/" + md5));
+            IOUtils.copyBytes(inputStream, outputStream, 2048, true);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+// /* 上传文件信息到服务器，生成用户信息*/
+        // function uploadFileInfo(md5) {
+        //     var fileName = document.getElementById('file').files[0].name;
+        //     var userId = [[${loginUser.id}]];
+        //     var parentId = [[${parentId}]];
+        //     $.ajax({
+        //         url: "/uploadFileInfo",
+        //         type: "POST",
+        //         data: {
+        //             fileName: fileName,
+        //             userId: userId,
+        //             parentId: parentId,
+        //             md5: md5
+        //         },
+        //         success: function(code) {
+        //             // 服务器返回结果
+        //             if (code == "success") {
+        //                 console.log("创建成功");
+        //                 window.location.reload();
+        //             } else if (code == "repeat")
+        //                 layer.alert("文件已存在");
+        //             else if (code == "space")
+        //                 layer.alert("空间不足")
+        //         }
+        //     });
+        // }
